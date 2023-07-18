@@ -1,5 +1,5 @@
 ##############################################################################
-# Resource group
+# Resource Group
 ##############################################################################
 
 module "resource_group" {
@@ -11,14 +11,13 @@ module "resource_group" {
 }
 
 ##############################################################################
-# COS instance
+# RabbitMQ
 ##############################################################################
 
-resource "ibm_resource_instance" "cos_instance" {
-  name              = "${var.prefix}-cos"
+module "icd_rabbitmq" {
+  source            = "../.."
   resource_group_id = module.resource_group.resource_group_id
-  service           = "cloud-object-storage"
-  plan              = "standard"
-  location          = "global"
+  instance_name     = "${var.prefix}-rabbitmq"
+  region            = var.region
   tags              = var.resource_tags
 }
