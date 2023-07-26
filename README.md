@@ -1,5 +1,6 @@
 # IBM Cloud Messages for RabbitMQ module
 
+[![Graduated (Supported)](https://img.shields.io/badge/Status-Graduated%20(Supported)-brightgreen)](https://terraform-ibm-modules.github.io/documentation/#/badge-status)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![latest release](https://img.shields.io/github/v/release/terraform-ibm-modules/terraform-ibm-module-template?logo=GitHub&sort=semver)](https://github.com/terraform-ibm-modules/terraform-ibm-module-template/releases/latest)
@@ -16,7 +17,7 @@ IBM Cloud Messages for RabbitMQ supports only Key Protect encryption for backups
 ```hcl
 module "rabbitmq" {
   source            = "terraform-ibm-modules/icd-rabbitmq/ibm"
-  version           = "3.0.1"
+  version           = "X.X.X"  # Replace "X.X.X" with a release version to lock into a specific release
   resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
   instance_name     = "my-rabbitmq-instance"
 }
