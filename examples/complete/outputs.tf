@@ -2,22 +2,29 @@
 # Outputs
 ##############################################################################
 
-output "region" {
-  description = "The region all resources were provisioned in"
-  value       = var.region
+output "id" {
+  description = "RabbitMQ instance id"
+  value       = module.icd_rabbitmq.id
 }
 
-output "prefix" {
-  description = "The prefix used to name all provisioned resources"
-  value       = var.prefix
+output "guid" {
+  description = "Postgresql instance guid"
+  value       = module.icd_rabbitmq.guid
 }
 
-output "resource_group_name" {
-  description = "The name of the resource group used"
-  value       = var.resource_group
+output "version" {
+  description = "RabbitMQ instance version"
+  value       = module.icd_rabbitmq.version
 }
 
-output "resource_tags" {
-  description = "List of resource tags"
-  value       = var.resource_tags
+output "service_credentials_json" {
+  description = "Service credentials json map"
+  value       = module.icd_rabbitmq.service_credentials_json
+  sensitive   = true
+}
+
+output "service_credentials_object" {
+  description = "Service credentials object"
+  value       = module.icd_rabbitmq.service_credentials_object
+  sensitive   = true
 }
