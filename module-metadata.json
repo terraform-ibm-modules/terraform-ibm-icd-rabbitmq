@@ -262,11 +262,10 @@
     "tags": {
       "name": "tags",
       "type": "list(any)",
-      "description": "(Optional, Array of Strings) A list of tags that you want to add to your instance.",
+      "description": "Optional list of tags to be added to the RabbitMQ instance.",
       "default": [],
       "source": [
-        "ibm_database.rabbitmq_database.tags",
-        "ibm_resource_key.service_credentials.tags"
+        "ibm_database.rabbitmq_database.tags"
       ],
       "pos": {
         "filename": "variables.tf",
@@ -433,8 +432,7 @@
       "type": "ibm_resource_key",
       "name": "service_credentials",
       "attributes": {
-        "for_each": "service_credential_names",
-        "tags": "tags"
+        "for_each": "service_credential_names"
       },
       "provider": {
         "name": "ibm"
@@ -461,7 +459,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 192
+        "line": 191
       }
     }
   },

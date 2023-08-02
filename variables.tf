@@ -20,7 +20,7 @@ variable "instance_name" {
 
 variable "tags" {
   type        = list(any)
-  description = "(Optional, Array of Strings) A list of tags that you want to add to your instance."
+  description = "Optional list of tags to be added to the RabbitMQ instance."
   default     = []
 }
 
