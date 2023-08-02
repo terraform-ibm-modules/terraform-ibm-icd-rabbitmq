@@ -64,6 +64,12 @@ variable "resource_tags" {
   default     = []
 }
 
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
+}
+
 variable "auto_scaling" {
   type = object({
     disk = object({

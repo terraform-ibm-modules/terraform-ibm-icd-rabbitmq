@@ -83,6 +83,7 @@ module "icd_rabbitmq" {
   rabbitmq_version           = var.rabbitmq_version
   kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-rabbitmq"].crn
   tags                       = var.resource_tags
+  access_tags                = var.access_tags
   auto_scaling               = var.auto_scaling
   cbr_rules = [
     {

@@ -1,6 +1,27 @@
 {
   "path": ".",
   "variables": {
+    "access_tags": {
+      "name": "access_tags",
+      "type": "list(string)",
+      "description": "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details",
+      "default": [],
+      "source": [
+        "ibm_resource_tag.rabbitmq_tag.count",
+        "ibm_resource_tag.rabbitmq_tag.tags"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 27
+      },
+      "min_length": 1,
+      "max_length": 128,
+      "matches": "^[A-Za-z0-9:_ .-]+$",
+      "computed": true,
+      "elem": {
+        "type": "TypeString"
+      }
+    },
     "admin_pass": {
       "name": "admin_pass",
       "type": "string",
@@ -11,7 +32,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 132
+        "line": 145
       }
     },
     "auto_scaling": {
@@ -20,7 +41,7 @@
       "description": "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-autoscaling in the IBM Cloud Docs.",
       "pos": {
         "filename": "variables.tf",
-        "line": 94
+        "line": 107
       }
     },
     "backup_encryption_key_crn": {
@@ -29,7 +50,7 @@
       "description": "The CRN of a Key Protect key, that you want to use for encrypting disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. If no value passed, the value passed for the 'kms_key_crn' variable will be used. BYOK for backups is available only in US regions us-south and us-east, and eu-de. Only keys in the us-south and eu-de are durable to region failures. To ensure that your backups are available even if a region failure occurs, you must use a key from us-south or eu-de. Take note that Hyper Protect Crypto Services for IBM Cloud® Databases backups is not currently supported, so if no value is passed here, but a HPCS value is passed for var.kms_key_crn, databases backup encryption will use the default encryption keys.",
       "pos": {
         "filename": "variables.tf",
-        "line": 175
+        "line": 188
       }
     },
     "cbr_rules": {
@@ -46,7 +67,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 201
+        "line": 214
       }
     },
     "cpu_count": {
@@ -56,7 +77,7 @@
       "default": 0,
       "pos": {
         "filename": "variables.tf",
-        "line": 82
+        "line": 95
       }
     },
     "disk_mb": {
@@ -66,7 +87,7 @@
       "default": 1024,
       "pos": {
         "filename": "variables.tf",
-        "line": 88
+        "line": 101
       }
     },
     "endpoints": {
@@ -81,7 +102,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 33
+        "line": 46
       },
       "options": "public, private, public-and-private"
     },
@@ -94,7 +115,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 191
+        "line": 204
       },
       "immutable": true,
       "computed": true
@@ -122,7 +143,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 155
+        "line": 168
       }
     },
     "kms_key_crn": {
@@ -134,7 +155,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 161
+        "line": 174
       },
       "immutable": true
     },
@@ -145,7 +166,7 @@
       "default": 3,
       "pos": {
         "filename": "variables.tf",
-        "line": 69
+        "line": 82
       }
     },
     "memory_mb": {
@@ -155,7 +176,7 @@
       "default": 1024,
       "pos": {
         "filename": "variables.tf",
-        "line": 76
+        "line": 89
       }
     },
     "plan": {
@@ -169,7 +190,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 57
+        "line": 70
       },
       "immutable": true,
       "options": "standard, enterprise"
@@ -184,7 +205,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 27
+        "line": 40
       }
     },
     "rabbitmq_version": {
@@ -196,7 +217,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 43
+        "line": 56
       },
       "immutable": true,
       "computed": true
@@ -246,7 +267,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 121
+        "line": 134
       }
     },
     "skip_iam_authorization_policy": {
@@ -256,7 +277,7 @@
       "default": false,
       "pos": {
         "filename": "variables.tf",
-        "line": 185
+        "line": 198
       }
     },
     "tags": {
@@ -286,7 +307,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 139
+        "line": 152
       }
     }
   },
@@ -441,7 +462,23 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 163
+        "line": 170
+      }
+    },
+    "ibm_resource_tag.rabbitmq_tag": {
+      "mode": "managed",
+      "type": "ibm_resource_tag",
+      "name": "rabbitmq_tag",
+      "attributes": {
+        "count": "access_tags",
+        "tags": "access_tags"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 122
       }
     }
   },
@@ -461,7 +498,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 192
+        "line": 199
       }
     }
   },
@@ -539,7 +576,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 125
+        "line": 132
       }
     }
   }
