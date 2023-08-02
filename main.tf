@@ -119,6 +119,13 @@ resource "ibm_database" "rabbitmq_database" {
   }
 }
 
+resource "ibm_resource_tag" "rabbitmq_tag" {
+  count       = length(var.access_tags) == 0 ? 0 : 1
+  resource_id = ibm_database.rabbitmq_database.resource_crn
+  tags        = var.access_tags
+  tag_type    = "access"
+}
+
 ##############################################################################
 # Context Based Restrictions
 ##############################################################################
