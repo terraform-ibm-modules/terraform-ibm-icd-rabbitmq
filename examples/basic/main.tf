@@ -20,4 +20,5 @@ module "icd_rabbitmq" {
   instance_name     = "${var.prefix}-rabbitmq"
   region            = var.region
   tags              = var.resource_tags
+  access_tags       = var.access_tags
 }
