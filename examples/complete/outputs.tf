@@ -28,3 +28,13 @@ output "service_credentials_object" {
   value       = module.icd_rabbitmq.service_credentials_object
   sensitive   = true
 }
+
+output "hostname" {
+  description = "Database hostname. Only contains value when var.service_credential_names or var.users are set."
+  value       =  module.icd_rabbitmq.hostname
+}
+
+output "port" {
+  description = "Database port. Only contains value when var.service_credential_names or var.users are set."
+  value       =  module.icd_rabbitmq.port
+}
