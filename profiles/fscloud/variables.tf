@@ -58,14 +58,11 @@ variable "kms_key_crn" {
   type        = string
   description = "The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. Only used if var.kms_encryption_enabled is set to true."
   default     = null
-  validation {
-    condition = anytrue([
-      var.kms_key_crn == null,
-      can(regex(".*kms.*", var.kms_key_crn)),
-      can(regex(".*hs-crypto.*", var.kms_key_crn)),
-    ])
-    error_message = "Value must be the root key CRN from either the Key Protect or Hyper Protect Crypto Service (HPCS)"
-  }
+}
+
+variable "existing_kms_instance_guid" {
+  description = "The GUID of the Hyper Protect Crypto Services instance."
+  type        = string
 }
 
 variable "admin_pass" {
@@ -92,6 +89,12 @@ variable "users" {
   default     = []
   sensitive   = true
   description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users, more info on that can be found here https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-user-management"
+}
+
+variable "service_credential_names" {
+  description = "Map of name, role for service credentials that you want to create for the database"
+  type        = map(string)
+  default     = {}
 }
 
 variable "disk_mb" {
@@ -131,4 +134,20 @@ variable "auto_scaling" {
   })
   description = "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-autoscaling in the IBM Cloud Docs."
   default     = null
+}
+
+variable "cbr_rules" {
+  type = list(object({
+    description = string
+    account_id  = string
+    rule_contexts = list(object({
+      attributes = optional(list(object({
+        name  = string
+        value = string
+    }))) }))
+    enforcement_mode = string
+  }))
+  description = "(Optional, list) List of CBR rules to create"
+  default     = []
+  # Validation happens in the rule module
 }

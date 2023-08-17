@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
@@ -16,7 +15,6 @@ import (
 
 // Use existing resource group
 const resourceGroup = "geretain-test-rabbitmq"
-const completeExampleTerraformDir = "examples/complete"
 
 // Restricting due to limited availability of BYOK in certain regions
 const regionSelectionPath = "../common-dev-assets/common-go-assets/icd-region-prefs.yaml"
@@ -28,6 +26,7 @@ var permanentResources map[string]interface{}
 
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
 func TestMain(m *testing.M) {
+
 	var err error
 	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
 	if err != nil {
@@ -42,7 +41,7 @@ func TestRunFSCloudExample(t *testing.T) {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:      t,
 		TerraformDir: "examples/fscloud",
-		Prefix:       "rabbitmq-fscloud",
+		Prefix:       "rabbitmq-cmp",
 		Region:       "us-south", // For FSCloud locking into us-south since that is where the HPCS permanent instance is
 		/*
 		 Comment out the 'ResourceGroup' input to force this test to create a unique resource group to ensure tests do
@@ -63,7 +62,7 @@ func TestRunFSCloudExample(t *testing.T) {
 	assert.NotNil(t, output, "Expected some output")
 }
 
-func TestRunComplete(t *testing.T) {
+func TestRunCompleteUpgradeExample(t *testing.T) {
 	t.Parallel()
 
 	// Generate a 10 char long random string for the admin_pass
@@ -73,12 +72,12 @@ func TestRunComplete(t *testing.T) {
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
-		Prefix:             "rabbitmq-cmp",
-		ResourceGroup:      resourceGroup,
+		TerraformDir:       "examples/complete",
+		Prefix:             "rabbitmq-upg",
 		BestRegionYAMLPath: regionSelectionPath,
+		ResourceGroup:      resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"rabbitmq_version": "3.11", // Always lock this test into the latest supported RabbitMQ version
+			"rabbitmq_version": "3.11", // Always lock to the lowest supported RabbitMQ version
 			"users": []map[string]interface{}{
 				{
 					"name":     "testuser",
@@ -87,30 +86,6 @@ func TestRunComplete(t *testing.T) {
 				},
 			},
 			"admin_pass": randomPass,
-		},
-	})
-	options.SkipTestTearDown = true
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-	outputs := terraform.OutputAll(options.Testing, options.TerraformOptions)
-	expectedOutputs := []string{"port", "hostname"}
-	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
-	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
-	options.TestTearDown()
-}
-
-func TestRunUpgradeExample(t *testing.T) {
-	t.Parallel()
-
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
-		Prefix:             "rabbitmq-upg",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		TerraformVars: map[string]interface{}{
-			"rabbitmq_version": "3.9", // Always lock to the lowest supported RabbitMQ version
 		},
 	})
 

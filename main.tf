@@ -39,7 +39,6 @@ resource "time_sleep" "wait_for_authorization_policy" {
   create_duration = "30s"
 }
 
-
 resource "ibm_database" "rabbitmq_database" {
   depends_on                = [ibm_iam_authorization_policy.kms_policy]
   name                      = var.instance_name
