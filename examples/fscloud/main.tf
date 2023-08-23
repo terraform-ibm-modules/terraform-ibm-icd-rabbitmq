@@ -64,6 +64,7 @@ module "rabbitmq_database" {
   service_credential_names   = var.service_credential_names
   endpoints                  = var.endpoints
   tags                       = var.tags
+  access_tags                = var.access_tags
   auto_scaling               = var.auto_scaling
   cbr_rules = [
     {

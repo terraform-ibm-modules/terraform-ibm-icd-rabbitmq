@@ -88,3 +88,9 @@ variable "tags" {
   description = "Optional list of tags to be added to the RabbitMQ instance."
   default     = []
 }
+
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
+}
