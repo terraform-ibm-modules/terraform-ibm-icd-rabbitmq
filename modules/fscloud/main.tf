@@ -7,6 +7,7 @@ module "rabbitmq_database" {
   rabbitmq_version           = var.rabbitmq_version
   endpoints                  = var.endpoints
   tags                       = var.tags
+  kms_encryption_enabled     = true
   existing_kms_instance_guid = var.existing_kms_instance_guid
   service_credential_names   = var.service_credential_names
   kms_key_crn                = var.kms_key_crn
