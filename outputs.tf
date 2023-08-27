@@ -46,5 +46,5 @@ output "hostname" {
 
 output "port" {
   description = "Database port. Only contains value when var.service_credential_names or var.users are set."
-  value       = length(var.service_credential_names) > 0 ? nonsensitive(ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.hosts.0.port"]) : length(var.users) > 0 ? nonsensitive(flatten(data.ibm_database_connection.database_connection[0].https[0].hosts[0].port)) : null
+  value       = length(var.service_credential_names) > 0 ? nonsensitive(ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.hosts.0.port"]) : length(var.users) > 0 ? data.ibm_database_connection.database_connection[0].https[0].hosts[0].port : null
 }
