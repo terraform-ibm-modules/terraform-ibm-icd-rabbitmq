@@ -63,10 +63,6 @@ func TestRunFSCloudExample(t *testing.T) {
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
-	outputs := terraform.OutputAll(options.Testing, options.TerraformOptions)
-	expectedOutputs := []string{"port", "hostname"}
-	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
-	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
 	options.TestTearDown()
 }
 
@@ -102,4 +98,8 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
+	outputs := terraform.OutputAll(options.Testing, options.TerraformOptions)
+	expectedOutputs := []string{"port", "hostname"}
+	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
+	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
 }
