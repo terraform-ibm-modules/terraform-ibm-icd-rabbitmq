@@ -244,6 +244,7 @@
       "required": true,
       "source": [
         "ibm_database.rabbitmq_database.resource_group_id",
+        "ibm_iam_authorization_policy.kms_policy.description",
         "ibm_iam_authorization_policy.kms_policy.source_resource_group_id"
       ],
       "pos": {
@@ -434,7 +435,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 43
+        "line": 44
       }
     },
     "ibm_iam_authorization_policy.kms_policy": {
@@ -443,6 +444,7 @@
       "name": "kms_policy",
       "attributes": {
         "count": "kms_encryption_enabled",
+        "description": "resource_group_id",
         "source_resource_group_id": "resource_group_id",
         "target_resource_instance_id": "existing_kms_instance_guid"
       },
@@ -466,7 +468,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 178
+        "line": 179
       }
     },
     "ibm_resource_tag.rabbitmq_tag": {
@@ -482,7 +484,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 130
+        "line": 131
       }
     },
     "time_sleep.wait_for_authorization_policy": {
@@ -494,7 +496,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 36
+        "line": 37
       }
     }
   },
@@ -514,7 +516,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 206
+        "line": 207
       }
     }
   },
@@ -592,7 +594,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 140
+        "line": 141
       }
     }
   }
