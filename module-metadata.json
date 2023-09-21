@@ -32,7 +32,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 145
+        "line": 144
       }
     },
     "auto_scaling": {
@@ -41,7 +41,7 @@
       "description": "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-autoscaling in the IBM Cloud Docs.",
       "pos": {
         "filename": "variables.tf",
-        "line": 107
+        "line": 106
       }
     },
     "backup_encryption_key_crn": {
@@ -50,7 +50,7 @@
       "description": "The CRN of a Key Protect key, that you want to use for encrypting disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. If no value passed, the value passed for the 'kms_key_crn' variable will be used. BYOK for backups is available only in US regions us-south and us-east, and eu-de. Only keys in the us-south and eu-de are durable to region failures. To ensure that your backups are available even if a region failure occurs, you must use a key from us-south or eu-de. Take note that Hyper Protect Crypto Services for IBM Cloud® Databases backups is not currently supported, so if no value is passed here, but a HPCS value is passed for var.kms_key_crn, databases backup encryption will use the default encryption keys.",
       "pos": {
         "filename": "variables.tf",
-        "line": 188
+        "line": 187
       }
     },
     "cbr_rules": {
@@ -67,7 +67,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 214
+        "line": 213
       }
     },
     "cpu_count": {
@@ -77,7 +77,7 @@
       "default": 0,
       "pos": {
         "filename": "variables.tf",
-        "line": 95
+        "line": 94
       }
     },
     "disk_mb": {
@@ -87,7 +87,7 @@
       "default": 1024,
       "pos": {
         "filename": "variables.tf",
-        "line": 101
+        "line": 100
       }
     },
     "endpoints": {
@@ -115,7 +115,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 204
+        "line": 203
       },
       "immutable": true,
       "computed": true
@@ -143,7 +143,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 168
+        "line": 167
       }
     },
     "kms_key_crn": {
@@ -155,7 +155,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 174
+        "line": 173
       },
       "immutable": true
     },
@@ -166,7 +166,7 @@
       "default": 3,
       "pos": {
         "filename": "variables.tf",
-        "line": 82
+        "line": 81
       }
     },
     "memory_mb": {
@@ -176,7 +176,7 @@
       "default": 1024,
       "pos": {
         "filename": "variables.tf",
-        "line": 89
+        "line": 88
       }
     },
     "plan": {
@@ -190,7 +190,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 70
+        "line": 69
       },
       "immutable": true,
       "options": "standard, enterprise, enterprise-sharding"
@@ -268,7 +268,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 134
+        "line": 133
       }
     },
     "skip_iam_authorization_policy": {
@@ -278,7 +278,7 @@
       "default": false,
       "pos": {
         "filename": "variables.tf",
-        "line": 198
+        "line": 197
       }
     },
     "tags": {
@@ -307,7 +307,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 152
+        "line": 151
       }
     }
   },
