@@ -92,15 +92,13 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 			"admin_pass": randomPass,
 		},
 	})
-	options.SkipTestTearDown = true
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
-	outputs := terraform.OutputAll(options.Testing, options.TerraformOptions)
+	outputs := options.LastTestTerraformOutputs(options.Testing, options.TerraformOptions)
 	expectedOutputs := []string{"port", "hostname"}
 	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
 	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
-	options.TestTearDown()
 }
