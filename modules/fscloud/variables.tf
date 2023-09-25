@@ -28,24 +28,12 @@ variable "rabbitmq_version" {
   description = "The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used."
   type        = string
   default     = null
-  validation {
-    condition = anytrue([
-      var.rabbitmq_version == null,
-      var.rabbitmq_version == "3.9",
-      var.rabbitmq_version == "3.11"
-    ])
-    error_message = "Version must be 3.9 or 3.11. If no value passed, the current ICD preferred version is used."
-  }
 }
 
 variable "endpoints" {
   description = "Endpoints available to the database instance (public, private, public-and-private)"
   type        = string
   default     = "private"
-  validation {
-    condition     = can(regex("public|public-and-private|private", var.endpoints))
-    error_message = "Valid values for endpoints are 'public', 'public-and-private', and 'private'"
-  }
 }
 
 variable "tags" {
