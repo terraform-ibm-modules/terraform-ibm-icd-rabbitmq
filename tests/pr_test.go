@@ -44,6 +44,7 @@ func TestRunComplete(t *testing.T) {
 	randomBytes := make([]byte, 10)
 	_, err := rand.Read(randomBytes)
 	randomPass := base64.URLEncoding.EncodeToString(randomBytes)[:10]
+	randomPass = randomPass[:0] + "A" + randomPass[1:]
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
