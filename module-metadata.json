@@ -445,7 +445,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 46
+        "line": 45
       }
     },
     "ibm_iam_authorization_policy.kms_policy": {
@@ -478,7 +478,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 181
+        "line": 180
       }
     },
     "ibm_resource_tag.rabbitmq_tag": {
@@ -494,7 +494,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 133
+        "line": 132
       }
     },
     "time_sleep.wait_for_authorization_policy": {
@@ -526,7 +526,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 209
+        "line": 208
       }
     }
   },
@@ -604,7 +604,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 143
+        "line": 142
       }
     }
   }
