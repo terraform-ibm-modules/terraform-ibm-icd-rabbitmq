@@ -60,7 +60,7 @@ variable "rabbitmq_version" {
   validation {
     condition = anytrue([
       var.rabbitmq_version == null,
-      var.rabbitmq_version == "3.11"
+      var.rabbitmq_version == "3.9"
     ])
     error_message = "Version must be 3.11. If no value passed, the current ICD preferred version is used."
   }
