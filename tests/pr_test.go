@@ -59,11 +59,9 @@ func TestRunFSCloudExample(t *testing.T) {
 		},
 	})
 
-	options.SkipTestTearDown = true
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
-	options.TestTearDown()
 }
 
 func TestRunCompleteUpgradeExample(t *testing.T) {
