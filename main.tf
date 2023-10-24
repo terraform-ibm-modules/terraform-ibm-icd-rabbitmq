@@ -88,7 +88,7 @@ resource "ibm_database" "rabbitmq_database" {
   }
 
   ## This for_each block is NOT a loop to attach to multiple auto_scaling blocks.
-  ## This block is only used to conditionally add auto_scaling block depending on var.auto_scaling
+  ## This block is only used to conditionally add auto_scaling block depending on var.auto_scaling.
   dynamic "auto_scaling" {
     for_each = local.auto_scaling_enabled
     content {
