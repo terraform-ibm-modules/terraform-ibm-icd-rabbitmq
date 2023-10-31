@@ -97,7 +97,7 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
-	outputs := options.LastTestTerraformOutputs(options.Testing, options.TerraformOptions)
+	outputs := options.LastTestTerraformOutputs
 	expectedOutputs := []string{"port", "hostname"}
 	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
 	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
