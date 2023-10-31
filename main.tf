@@ -46,7 +46,6 @@ resource "ibm_database" "rabbitmq_database" {
   depends_on                = [ibm_iam_authorization_policy.kms_policy]
   name                      = var.instance_name
   plan                      = var.plan
-  plan_validation           = var.plan_validation
   location                  = var.region
   service                   = "messages-for-rabbitmq"
   version                   = var.rabbitmq_version

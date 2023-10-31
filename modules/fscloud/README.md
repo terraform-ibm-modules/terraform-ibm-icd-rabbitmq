@@ -41,7 +41,6 @@ No resources.
 | <a name="input_instance_name"></a> [instance\_name](#input\_instance\_name) | The name of the RabbitMQ instance | `string` | n/a | yes |
 | <a name="input_kms_key_crn"></a> [kms\_key\_crn](#input\_kms\_key\_crn) | The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. Only used if var.kms\_encryption\_enabled is set to true. | `string` | `null` | no |
 | <a name="input_members"></a> [members](#input\_members) | Allocated number of members. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling | `number` | `3` | no |
-| <a name="input_plan_validation"></a> [plan\_validation](#input\_plan\_validation) | Enable or disable validating the database parameters for rabbitmq during the plan phase | `bool` | `true` | no |
 | <a name="input_rabbitmq_version"></a> [rabbitmq\_version](#input\_rabbitmq\_version) | The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used. | `string` | `null` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region where you want to deploy your instance. | `string` | `"us-south"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | The resource group ID where the RabbitMQ instance will be created. | `string` | n/a | yes |

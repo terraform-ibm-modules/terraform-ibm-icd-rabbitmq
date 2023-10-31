@@ -12,12 +12,6 @@ variable "instance_name" {
   description = "The name of the RabbitMQ instance"
 }
 
-variable "plan_validation" {
-  type        = bool
-  description = "Enable or disable validating the database parameters for rabbitmq during the plan phase"
-  default     = true
-}
-
 variable "region" {
   type        = string
   description = "The region where you want to deploy your instance."
