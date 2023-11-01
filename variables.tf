@@ -37,12 +37,6 @@ variable "access_tags" {
   }
 }
 
-variable "plan_validation" {
-  type        = bool
-  description = "Enable or disable validating the database parameters for rabbitmq during the plan phase"
-  default     = true
-}
-
 variable "endpoints" {
   description = "Endpoints available to the database instance (public, private, public-and-private)"
   type        = string
