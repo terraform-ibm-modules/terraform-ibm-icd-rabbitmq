@@ -42,7 +42,6 @@ resource "time_sleep" "wait_for_authorization_policy" {
   create_duration = "30s"
 }
 
-
 resource "ibm_database" "rabbitmq_database" {
   depends_on                = [ibm_iam_authorization_policy.kms_policy]
   name                      = var.instance_name
@@ -88,7 +87,7 @@ resource "ibm_database" "rabbitmq_database" {
   }
 
   ## This for_each block is NOT a loop to attach to multiple auto_scaling blocks.
-  ## This block is only used to conditionally add auto_scaling block depending on var.auto_scaling
+  ## This block is only used to conditionally add auto_scaling block depending on var.auto_scaling.
   dynamic "auto_scaling" {
     for_each = local.auto_scaling_enabled
     content {
