@@ -68,7 +68,7 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 
 	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
-	_, err := rand.Read(randomBytes)
+	rand.Read(randomBytes)
 	// add character prefix to avoid generated password beginning with special char and must have a number
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
