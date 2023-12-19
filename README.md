@@ -40,7 +40,7 @@ module "rabbitmq" {
 ```
 
 
-## Required IAM access policies
+### Required IAM access policies
 
 You need the following permissions to run this module.
 
