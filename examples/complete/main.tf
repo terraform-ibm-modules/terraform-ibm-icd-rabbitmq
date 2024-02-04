@@ -23,7 +23,16 @@ module "key_protect_all_inclusive" {
   region                    = var.region
   key_protect_instance_name = "${var.prefix}-kp"
   resource_tags             = var.resource_tags
-  key_map                   = { "icd" = ["${var.prefix}-rabbitmq"] }
+  keys = [
+    {
+      key_ring_name = "icd"
+      keys = [
+        {
+          key_name = "${var.prefix}-rabbitmq"
+        }
+      ]
+    }
+  ]
 }
 
 ##############################################################################
@@ -76,7 +85,7 @@ module "icd_rabbitmq" {
   instance_name              = "${var.prefix}-rabbitmq"
   region                     = var.region
   kms_encryption_enabled     = true
-  existing_kms_instance_guid = module.key_protect_all_inclusive.key_protect_guid
+  existing_kms_instance_guid = module.key_protect_all_inclusive.kms_guid
   service_credential_names   = var.service_credential_names
   admin_pass                 = var.admin_pass
   users                      = var.users
