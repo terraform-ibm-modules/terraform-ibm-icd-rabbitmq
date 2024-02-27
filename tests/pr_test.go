@@ -58,7 +58,7 @@ func TestRunFSCloudExample(t *testing.T) {
 			"access_tags":                permanentResources["accessTags"],
 			"existing_kms_instance_guid": permanentResources["hpcs_south"],
 			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
-			"rabbitmq_version":           "3.11", // Always lock this test into the latest supported RabbitMQ version
+			"rabbitmq_version":           "3.12", // Always lock this test into the latest supported RabbitMQ version
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
