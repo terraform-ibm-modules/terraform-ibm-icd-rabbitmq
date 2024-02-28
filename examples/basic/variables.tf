@@ -22,6 +22,12 @@ variable "resource_group" {
   default     = null
 }
 
+variable "rabbitmq_version" {
+  type        = string
+  description = "Version of rabbitmq to deploy"
+  default     = null
+}
+
 variable "resource_tags" {
   type        = list(string)
   description = "Optional list of tags to be added to created resources"
