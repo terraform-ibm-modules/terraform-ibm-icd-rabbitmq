@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
@@ -24,8 +25,11 @@ const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-res
 
 var permanentResources map[string]interface{}
 
+var sharedInfoSvc *cloudinfo.CloudInfoService
+
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
 func TestMain(m *testing.M) {
+	sharedInfoSvc, _ = cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
 
 	var err error
 	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
@@ -54,8 +58,9 @@ func TestRunFSCloudExample(t *testing.T) {
 			"access_tags":                permanentResources["accessTags"],
 			"existing_kms_instance_guid": permanentResources["hpcs_south"],
 			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
-			"rabbitmq_version":           "3.11", // Always lock this test into the latest supported RabbitMQ version
+			"rabbitmq_version":           "3.12", // Always lock this test into the latest supported RabbitMQ version
 		},
+		CloudInfoService: sharedInfoSvc,
 	})
 
 	output, err := options.RunTestConsistency()
@@ -68,7 +73,10 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 
 	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
-	rand.Read(randomBytes)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// add character prefix to avoid generated password beginning with special char and must have a number
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
@@ -89,6 +97,7 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 			},
 			"admin_pass": randomPass,
 		},
+		CloudInfoService: sharedInfoSvc,
 	})
 
 	output, err := options.RunTestUpgrade()

@@ -21,4 +21,5 @@ module "icd_rabbitmq" {
   region            = var.region
   tags              = var.resource_tags
   access_tags       = var.access_tags
+  rabbitmq_version  = var.rabbitmq_version
 }
