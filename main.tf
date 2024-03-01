@@ -43,7 +43,7 @@ resource "time_sleep" "wait_for_authorization_policy" {
 }
 
 resource "ibm_database" "rabbitmq_database" {
-  depends_on                = [ibm_iam_authorization_policy.kms_policy]
+  depends_on                = [time_sleep.wait_for_authorization_policy]
   name                      = var.instance_name
   plan                      = var.plan
   location                  = var.region
