@@ -9,10 +9,10 @@ output "id" {
 
 output "restored_rmq_db_id" {
   description = "Restored RabbitMQ db instance id"
-  value       = module.restored_rmq_db[0].id
+  value       = module.restored_rmq_db.id
 }
 
 output "restored_rmq_db_version" {
   description = "Restored RabbitMQ instance version"
-  value       = module.restored_rmq_db[0].version
+  value       = module.restored_rmq_db.version
 }
