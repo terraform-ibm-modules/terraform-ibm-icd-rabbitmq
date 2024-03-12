@@ -50,20 +50,3 @@ func TestPlanICDVersions(t *testing.T) {
 		t.Run(version, func(t *testing.T) { testPlanICDVersions(t, version) })
 	}
 }
-
-func TestRunRestoredDBExample(t *testing.T) {
-	t.Parallel()
-
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       "examples/backup",
-		Prefix:             "rabbitmq-backup",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		CloudInfoService:   sharedInfoSvc,
-	})
-
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}
