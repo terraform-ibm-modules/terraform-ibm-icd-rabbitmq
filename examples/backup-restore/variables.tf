@@ -13,7 +13,7 @@ variable "region" {
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"
-  default     = "rmq-res"
+  default     = "rabbitmq-restore"
 }
 
 variable "resource_group" {
@@ -40,8 +40,7 @@ variable "access_tags" {
   default     = []
 }
 
-variable "rmq_db_backup_crn" {
+variable "rabbitmq_db_crn" {
   type        = string
-  description = "The existing CRN of a backup resource to restore from. If null then it will create a new instance first and then create another instance pointing to the backup of the first instance."
-  default     = null
+  description = "The existing CRN of a rabbitMQ instance to fetch the latest backup crn."
 }

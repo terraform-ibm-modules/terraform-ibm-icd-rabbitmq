@@ -20,7 +20,7 @@ This module implements an instance of the IBM Cloud Messages for RabbitMQ servic
     * [Basic example](./examples/basic)
     * [Complete example with BYOK encryption, CBR rules, autoscaling, and service credentials creation](./examples/complete)
     * [Financial Services Cloud profile example with autoscaling enabled](./examples/fscloud)
-    * [Restore from backup example](./examples/backup)
+    * [Restore from backup example](./examples/backup-restore)
 * [Contributing](#contributing)
 <!-- END OVERVIEW HOOK -->
 

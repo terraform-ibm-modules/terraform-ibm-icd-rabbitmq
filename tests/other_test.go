@@ -2,6 +2,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,12 +56,12 @@ func TestRunRestoredDBExample(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       "examples/backup",
-		Prefix:             "rabbitmq-backup",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		CloudInfoService:   sharedInfoSvc,
+		Testing:          t,
+		TerraformDir:     "examples/backup-restore",
+		Prefix:           "rabbitmq-restored",
+		ResourceGroup:    resourceGroup,
+		Region:           fmt.Sprint(permanentResources["rabbitmqRegion"]),
+		CloudInfoService: sharedInfoSvc,
 	})
 
 	output, err := options.RunTestConsistency()
