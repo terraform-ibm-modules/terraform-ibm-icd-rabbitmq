@@ -18,4 +18,5 @@ module "rabbitmq_database" {
   cpu_count                  = var.cpu_count
   auto_scaling               = var.auto_scaling
   cbr_rules                  = var.cbr_rules
+  backup_crn                 = var.backup_crn
 }
