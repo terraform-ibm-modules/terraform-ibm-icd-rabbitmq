@@ -39,12 +39,23 @@ output "service_credentials_object" {
   sensitive   = true
 }
 
+output "adminuser" {
+  description = "Database admin user name"
+  value       = module.rabbitmq_database.adminuser
+}
+
 output "hostname" {
-  description = "Database hostname. Only contains value when var.service_credential_names or var.users are set."
+  description = "Database connection hostname"
   value       = module.rabbitmq_database.hostname
 }
 
 output "port" {
-  description = "Database port. Only contains value when var.service_credential_names or var.users are set."
+  description = "Database connection port"
   value       = module.rabbitmq_database.port
+}
+
+output "certificate_base64" {
+  description = "Database connection certificate"
+  value       = module.rabbitmq_database.certificate_base64
+  sensitive   = true
 }

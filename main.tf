@@ -206,9 +206,8 @@ locals {
 }
 
 data "ibm_database_connection" "database_connection" {
-  count         = length(var.users) > 0 ? 1 : 0
   endpoint_type = var.endpoints
   deployment_id = ibm_database.rabbitmq_database.id
-  user_id       = var.users[0].name
-  user_type     = var.users[0].type
+  user_id       = ibm_database.rabbitmq_database.adminuser
+  user_type     = "database"
 }
