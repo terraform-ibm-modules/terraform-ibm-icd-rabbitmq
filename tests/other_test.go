@@ -56,11 +56,14 @@ func TestRunRestoredDBExample(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:          t,
-		TerraformDir:     "examples/backup-restore",
-		Prefix:           "rabbitmq-restored",
-		ResourceGroup:    resourceGroup,
-		Region:           fmt.Sprint(permanentResources["rabbitmqRegion"]),
+		Testing:       t,
+		TerraformDir:  "examples/backup-restore",
+		Prefix:        "rabbitmq-restored",
+		ResourceGroup: resourceGroup,
+		Region:        fmt.Sprint(permanentResources["rabbitmqRegion"]),
+		TerraformVars: map[string]interface{}{
+			"rabbitmq_db_crn": permanentResources["rabbitmqCrn"],
+		},
 		CloudInfoService: sharedInfoSvc,
 	})
 
