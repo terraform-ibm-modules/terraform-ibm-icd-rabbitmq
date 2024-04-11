@@ -2,6 +2,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,4 +50,24 @@ func TestPlanICDVersions(t *testing.T) {
 	for _, version := range versions {
 		t.Run(version, func(t *testing.T) { testPlanICDVersions(t, version) })
 	}
+}
+
+func TestRunRestoredDBExample(t *testing.T) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  "examples/backup-restore",
+		Prefix:        "rabbitmq-restored",
+		ResourceGroup: resourceGroup,
+		Region:        fmt.Sprint(permanentResources["rabbitmqRegion"]),
+		TerraformVars: map[string]interface{}{
+			"rabbitmq_db_crn": permanentResources["rabbitmqCrn"],
+		},
+		CloudInfoService: sharedInfoSvc,
+	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
 }
