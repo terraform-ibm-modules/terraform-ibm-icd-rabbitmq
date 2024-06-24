@@ -24,12 +24,6 @@ variable "rabbitmq_version" {
   default     = null
 }
 
-variable "endpoints" {
-  description = "Endpoints available to the database instance (public, private, public-and-private)"
-  type        = string
-  default     = "private"
-}
-
 variable "tags" {
   type        = list(any)
   description = "Optional list of tags to be added to the RabbitMQ instance."
@@ -40,6 +34,12 @@ variable "kms_key_crn" {
   type        = string
   description = "The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. Only used if var.kms_encryption_enabled is set to true."
   default     = null
+}
+
+variable "skip_iam_authorization_policy" {
+  type        = bool
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all PostgreSQL database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
+  default     = false
 }
 
 variable "existing_kms_instance_guid" {
@@ -77,6 +77,12 @@ variable "service_credential_names" {
   description = "Map of name, role for service credentials that you want to create for the database"
   type        = map(string)
   default     = {}
+}
+
+variable "memory_mb" {
+  description = "Allocated memory per-member. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
+  type        = number
+  default     = 1024
 }
 
 variable "disk_mb" {

@@ -77,12 +77,6 @@ variable "service_credential_names" {
   default     = {}
 }
 
-variable "endpoints" {
-  description = "Endpoints available to the database instance (public, private, public-and-private)"
-  type        = string
-  default     = "private"
-}
-
 variable "tags" {
   type        = list(any)
   description = "Optional list of tags to be added to the RabbitMQ instance."
