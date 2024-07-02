@@ -83,7 +83,7 @@ variable "members" {
 variable "memory_mb" {
   description = "Allocated memory per-member. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
   type        = number
-  default     = 4096
+  default     = 8192
 }
 
 variable "cpu_count" {

@@ -49,7 +49,7 @@ variable "existing_kms_instance_guid" {
 
 variable "skip_iam_authorization_policy" {
   type        = bool
-  description = "Set to true to skip the creation of an IAM authorization policy that permits all Elasticsearch database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
   default     = false
 }
 
@@ -87,8 +87,8 @@ variable "service_credential_names" {
 
 variable "memory_mb" {
   type        = number
-  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
-  default     = 4096
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
+  default     = 8192
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 
