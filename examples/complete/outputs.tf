@@ -8,7 +8,7 @@ output "id" {
 }
 
 output "guid" {
-  description = "Postgresql instance guid"
+  description = "RabbitMQ instance guid"
   value       = module.icd_rabbitmq.guid
 }
 
