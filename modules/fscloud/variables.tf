@@ -36,12 +36,6 @@ variable "kms_key_crn" {
   default     = null
 }
 
-variable "skip_iam_authorization_policy" {
-  type        = bool
-  description = "Set to true to skip the creation of an IAM authorization policy that permits all PostgreSQL database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
-  default     = false
-}
-
 variable "existing_kms_instance_guid" {
   description = "The GUID of the Hyper Protect Crypto Services instance."
   type        = string
@@ -77,12 +71,6 @@ variable "service_credential_names" {
   description = "Map of name, role for service credentials that you want to create for the database"
   type        = map(string)
   default     = {}
-}
-
-variable "memory_mb" {
-  description = "Allocated memory per-member. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  type        = number
-  default     = 1024
 }
 
 variable "disk_mb" {
