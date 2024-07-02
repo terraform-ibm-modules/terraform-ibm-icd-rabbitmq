@@ -66,6 +66,8 @@ module "rabbitmq_database" {
   tags                       = var.tags
   access_tags                = var.access_tags
   auto_scaling               = var.auto_scaling
+  backup_encryption_key_crn  = var.backup_encryption_key_crn
+  backup_crn                 = var.backup_crn
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"
