@@ -47,6 +47,13 @@ variable "existing_kms_instance_guid" {
   type        = string
 }
 
+variable "backup_encryption_key_crn" {
+  type        = string
+  description = "The CRN of a Hyper Protect Crypto Service use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  default     = null
+  # Validation happens in the root module
+}
+
 variable "admin_pass" {
   type        = string
   description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
