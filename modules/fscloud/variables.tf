@@ -51,7 +51,7 @@ variable "skip_iam_authorization_policy" {
   type        = bool
   description = "Set to true to skip the creation of an IAM authorization policy that permits all RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
   default     = false
-}  
+}
 
 variable "backup_encryption_key_crn" {
   type        = string
