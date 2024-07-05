@@ -11,6 +11,7 @@ module "rabbitmq_database" {
   kms_encryption_enabled        = true
   existing_kms_instance_guid    = var.existing_kms_instance_guid
   service_credential_names      = var.service_credential_names
+  backup_encryption_key_crn     = var.backup_encryption_key_crn
   kms_key_crn                   = var.kms_key_crn
   admin_pass                    = var.admin_pass
   members                       = var.members

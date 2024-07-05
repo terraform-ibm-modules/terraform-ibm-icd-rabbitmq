@@ -67,6 +67,8 @@ module "rabbitmq_database" {
   access_tags                = var.access_tags
   auto_scaling               = var.auto_scaling
   member_host_flavor         = "b3c.4x16.encrypted"
+  backup_encryption_key_crn  = var.backup_encryption_key_crn
+  backup_crn                 = var.backup_crn
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"
