@@ -41,6 +41,19 @@ variable "existing_kms_instance_guid" {
   type        = string
 }
 
+variable "skip_iam_authorization_policy" {
+  type        = bool
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
+  default     = false
+}
+
+variable "backup_encryption_key_crn" {
+  type        = string
+  description = "The CRN of a Hyper Protect Crypto Service use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  default     = null
+  # Validation happens in the root module
+}
+
 variable "admin_pass" {
   type        = string
   description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
@@ -73,6 +86,13 @@ variable "service_credential_names" {
   default     = {}
 }
 
+variable "memory_mb" {
+  type        = number
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
+  default     = 8192
+  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+}
+
 variable "disk_mb" {
   description = "Allocated disk per member. For more information, see https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
   type        = number
@@ -83,6 +103,12 @@ variable "cpu_count" {
   description = "Allocated dedicated CPU per member. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
   type        = number
   default     = 0
+}
+
+variable "member_host_flavor" {
+  type        = string
+  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  default     = null
 }
 
 variable "auto_scaling" {

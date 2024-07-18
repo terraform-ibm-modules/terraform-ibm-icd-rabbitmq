@@ -9,12 +9,15 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
 
-  # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn'. If this is a HPCS key (which is not currently supported for backup encryption), default to 'null' meaning encryption is done using randomly generated keys
-  # More info https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs
-  backup_encryption_key_crn = var.use_default_backup_encryption_key == true ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : (can(regex(".*kms.*", var.kms_key_crn)) ? var.kms_key_crn : null))
+  # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
+  # For more info, see https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok and https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  backup_encryption_key_crn = var.use_default_backup_encryption_key == true ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
 
   # Determine if auto scaling is enabled
   auto_scaling_enabled = var.auto_scaling == null ? [] : [1]
+
+  # Determine if host_flavor is used
+  host_flavor_set = var.member_host_flavor != null ? true : false
 
   # Determine what KMS service is being used for database encryption
   kms_service = var.kms_key_crn != null ? (
@@ -67,23 +70,65 @@ resource "ibm_database" "rabbitmq_database" {
     }
   }
 
-  group {
-    group_id = "member"
-
-    memory {
-      allocation_mb = var.memory_mb
+  ## This for_each block is NOT a loop to attach to multiple group blocks.
+  ## This is used to conditionally add one, OR, the other group block depending on var.local.host_flavor_set
+  ## This block is for if host_flavor IS set to specific pre-defined host sizes and not set to "multitenant"
+  dynamic "group" {
+    for_each = local.host_flavor_set && var.member_host_flavor != "multitenant" ? [1] : []
+    content {
+      group_id = "member" # Only member type is allowed for IBM Cloud Databases
+      host_flavor {
+        id = var.member_host_flavor
+      }
+      disk {
+        allocation_mb = var.disk_mb
+      }
+      members {
+        allocation_count = var.members
+      }
     }
+  }
 
-    disk {
-      allocation_mb = var.disk_mb
+  ## This block is for if host_flavor IS set to "multitenant"
+  dynamic "group" {
+    for_each = local.host_flavor_set && var.member_host_flavor == "multitenant" ? [1] : []
+    content {
+      group_id = "member" # Only member type is allowed for IBM Cloud Databases
+      host_flavor {
+        id = var.member_host_flavor
+      }
+      disk {
+        allocation_mb = var.disk_mb
+      }
+      memory {
+        allocation_mb = var.memory_mb
+      }
+      cpu {
+        allocation_count = var.cpu_count
+      }
+      members {
+        allocation_count = var.members
+      }
     }
+  }
 
-    cpu {
-      allocation_count = var.cpu_count
-    }
-
-    members {
-      allocation_count = var.members
+  ## This block is for if host_flavor IS NOT set
+  dynamic "group" {
+    for_each = local.host_flavor_set ? [] : [1]
+    content {
+      group_id = "member" # Only member type is allowed for IBM Cloud Databases
+      memory {
+        allocation_mb = var.memory_mb
+      }
+      disk {
+        allocation_mb = var.disk_mb
+      }
+      cpu {
+        allocation_count = var.cpu_count
+      }
+      members {
+        allocation_count = var.members
+      }
     }
   }
 

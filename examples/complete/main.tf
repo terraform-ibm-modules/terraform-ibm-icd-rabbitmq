@@ -96,6 +96,7 @@ module "icd_rabbitmq" {
   tags                       = var.resource_tags
   access_tags                = var.access_tags
   auto_scaling               = var.auto_scaling
+  member_host_flavor         = "multitenant"
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"
