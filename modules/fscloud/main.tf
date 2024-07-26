@@ -4,8 +4,8 @@ module "rabbitmq_database" {
   instance_name                 = var.instance_name
   region                        = var.region
   skip_iam_authorization_policy = var.skip_iam_authorization_policy
+  endpoints                     = "private"
   rabbitmq_version              = var.rabbitmq_version
-  endpoints                     = var.endpoints
   tags                          = var.tags
   access_tags                   = var.access_tags
   kms_encryption_enabled        = true
