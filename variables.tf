@@ -2,20 +2,128 @@
 # Input Variables
 ##############################################################################
 
-variable "region" {
-  type        = string
-  description = "The region where you want to deploy your instance."
-  default     = "us-south"
-}
-
 variable "resource_group_id" {
   type        = string
   description = "The resource group ID where the RabbitMQ instance will be created."
 }
 
 variable "instance_name" {
-  description = "The name to give the RabbitMQ instance"
   type        = string
+  description = "The name to give the RabbitMQ instance"
+}
+
+variable "rabbitmq_version" {
+  type        = string
+  description = "The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used."
+  default     = null
+
+  validation {
+    condition = anytrue([
+      var.rabbitmq_version == null,
+      var.rabbitmq_version == "3.11",
+      var.rabbitmq_version == "3.12"
+    ])
+    error_message = "Version must be 3.11 or 3.12. If no value passed, the current ICD preferred version is used."
+  }
+}
+
+variable "region" {
+  type        = string
+  description = "The region where you want to deploy your instance."
+  default     = "us-south"
+}
+
+variable "plan" {
+  type        = string
+  description = "The name of the service plan that you choose for your RabbitMQ instance"
+  default     = "standard"
+
+  validation {
+    condition = anytrue([
+      var.plan == "standard",
+    ])
+    error_message = "Only standard plan is supported."
+  }
+}
+
+##############################################################################
+# ICD hosting model properties
+##############################################################################
+
+variable "members" {
+  type        = number
+  description = "Allocated number of members. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 3
+  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+}
+
+variable "cpu_count" {
+  type        = number
+  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 0
+  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+}
+
+variable "disk_mb" {
+  type        = number
+  description = "Allocated disk per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 1024
+  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+}
+
+variable "member_host_flavor" {
+  type        = string
+  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  default     = null
+  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+}
+
+variable "memory_mb" {
+  type        = number
+  description = "Allocated memory per-member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 8192
+  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+}
+
+variable "admin_pass" {
+  type        = string
+  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
+  default     = null
+  sensitive   = true
+}
+
+variable "users" {
+  type = list(object({
+    name     = string
+    password = string # pragma: allowlist secret
+    type     = string # "type" is required to generate the connection string for the outputs.
+    role     = optional(string)
+  }))
+  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users, more info on that can be found here https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-user-management"
+  default     = []
+  sensitive   = true
+}
+
+variable "service_credential_names" {
+  type        = map(string)
+  description = "Map of name, role for service credentials that you want to create for the database"
+  default     = {}
+
+  validation {
+    condition     = alltrue([for name, role in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], role)])
+    error_message = "Valid values for service credential roles are 'Administrator', 'Operator', 'Viewer', and `Editor`"
+  }
+}
+
+variable "endpoints" {
+  type        = string
+  description = "Endpoints available to the database instance (public, private, public-and-private)"
+  default     = "private"
+
+  validation {
+    condition     = can(regex("public|public-and-private|private", var.endpoints))
+    error_message = "Valid values for endpoints are 'public', 'public-and-private', and 'private'"
+  }
 }
 
 variable "tags" {
@@ -37,73 +145,9 @@ variable "access_tags" {
   }
 }
 
-variable "endpoints" {
-  description = "Endpoints available to the database instance (public, private, public-and-private)"
-  type        = string
-  default     = "private"
-  validation {
-    condition     = can(regex("public|public-and-private|private", var.endpoints))
-    error_message = "Valid values for endpoints are 'public', 'public-and-private', and 'private'"
-  }
-}
-
-variable "rabbitmq_version" {
-  description = "The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used."
-  type        = string
-  default     = null
-  validation {
-    condition = anytrue([
-      var.rabbitmq_version == null,
-      var.rabbitmq_version == "3.11",
-      var.rabbitmq_version == "3.12"
-    ])
-    error_message = "Version must be 3.11 or 3.12. If no value passed, the current ICD preferred version is used."
-  }
-}
-
-variable "plan" {
-  type        = string
-  description = "The name of the service plan that you choose for your RabbitMQ instance"
-  default     = "standard"
-  validation {
-    condition = anytrue([
-      var.plan == "standard",
-    ])
-    error_message = "Only standard plan is supported."
-  }
-}
-
-variable "members" {
-  type        = number
-  description = "Allocated number of members. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  default     = 3
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
-}
-
-variable "memory_mb" {
-  description = "Allocated memory per-member. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  type        = number
-  default     = 8192
-}
-
-variable "cpu_count" {
-  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  type        = number
-  default     = 0
-}
-
-variable "disk_mb" {
-  description = "Allocated disk per member. For more information, see https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  type        = number
-  default     = 1024
-}
-
-variable "member_host_flavor" {
-  type        = string
-  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
-  default     = null
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
-}
+##############################################################
+# Auto Scaling
+##############################################################
 
 variable "auto_scaling" {
   type = object({
@@ -132,36 +176,6 @@ variable "auto_scaling" {
   default     = null
 }
 
-variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
-  type        = map(string)
-  default     = {}
-
-  validation {
-    condition     = alltrue([for name, role in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], role)])
-    error_message = "Valid values for service credential roles are 'Administrator', 'Operator', 'Viewer', and `Editor`"
-  }
-}
-
-variable "admin_pass" {
-  type        = string
-  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
-  default     = null
-  sensitive   = true
-}
-
-variable "users" {
-  type = list(object({
-    name     = string
-    password = string # pragma: allowlist secret
-    type     = string # "type" is required to generate the connection string for the outputs.
-    role     = optional(string)
-  }))
-  default     = []
-  sensitive   = true
-  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users, more info on that can be found here https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-user-management"
-}
-
 ##############################################################
 # Encryption
 ##############################################################
@@ -172,34 +186,36 @@ variable "kms_encryption_enabled" {
   default     = false
 }
 
+variable "use_default_backup_encryption_key" {
+  type        = bool
+  description = "Set to true to use default ICD randomly generated keys."
+  default     = false
+}
+
 variable "kms_key_crn" {
   type        = string
-  description = "The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. Only used if var.kms_encryption_enabled is set to true."
+  description = "The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Services (HPCS) that you want to use for disk encryption. Only used if var.kms_encryption_enabled is set to true."
   default     = null
+
   validation {
     condition = anytrue([
       var.kms_key_crn == null,
       can(regex(".*kms.*", var.kms_key_crn)),
       can(regex(".*hs-crypto.*", var.kms_key_crn)),
     ])
-    error_message = "Value must be the root key CRN from either the Key Protect or Hyper Protect Crypto Service (HPCS)"
+    error_message = "Value must be the root key CRN from either the Key Protect or Hyper Protect Crypto Services (HPCS)"
   }
 }
 
 variable "backup_encryption_key_crn" {
   type        = string
-  description = "The CRN of a KMS (Key Protect or Hyper Protect Crypto Service) key to use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the type of KMS service (Key Protect or Hyper Protect Crypto Services) and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok and https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  description = "The CRN of a KMS (Key Protect or Hyper Protect Crypto Services) key to use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the type of KMS service (Key Protect or Hyper Protect Crypto Services) and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok and https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
   default     = null
+
   validation {
     condition     = var.backup_encryption_key_crn == null ? true : length(regexall("^crn:v1:bluemix:public:kms:(us-south|us-east|eu-de):a/[[:xdigit:]]{32}:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}:key:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}$|^crn:v1:bluemix:public:hs-crypto:[a-z-]+:a/[[:xdigit:]]{32}:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}:key:[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}$", var.backup_encryption_key_crn)) > 0
-    error_message = "Valid values for backup_encryption_key_crn is null, a Hyper Protect Crypto Service key CRN or a Key Protect key CRN from us-south, us-east or eu-de"
+    error_message = "Valid values for backup_encryption_key_crn is null, a Hyper Protect Crypto Services key CRN or a Key Protect key CRN from us-south, us-east or eu-de"
   }
-}
-
-variable "use_default_backup_encryption_key" {
-  type        = bool
-  description = "Set to true to use default ICD randomly generated keys."
-  default     = false
 }
 
 variable "skip_iam_authorization_policy" {
@@ -209,8 +225,8 @@ variable "skip_iam_authorization_policy" {
 }
 
 variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect or Key Protect instance in which the key specified in var.kms_key_crn and var.backup_encryption_key_crn is coming from. Only required if var.kms_encryption_enabled is 'true', var.skip_iam_authorization_policy is 'false', and passing a value for var.kms_key_crn and/or var.backup_encryption_key_crn."
   type        = string
+  description = "The GUID of the Hyper Protect or Key Protect instance in which the key specified in var.kms_key_crn and var.backup_encryption_key_crn is coming from. Only required if var.kms_encryption_enabled is 'true', var.skip_iam_authorization_policy is 'false', and passing a value for var.kms_key_crn and/or var.backup_encryption_key_crn."
   default     = null
 }
 
@@ -242,6 +258,7 @@ variable "backup_crn" {
   type        = string
   description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
   default     = null
+
   validation {
     condition = anytrue([
       var.backup_crn == null,

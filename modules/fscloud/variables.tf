@@ -12,46 +12,50 @@ variable "instance_name" {
   description = "The name of the RabbitMQ instance"
 }
 
+variable "rabbitmq_version" {
+  type        = string
+  description = "The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used."
+  default     = null
+}
+
 variable "region" {
   type        = string
   description = "The region where you want to deploy your instance."
   default     = "us-south"
 }
 
-variable "rabbitmq_version" {
-  description = "The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used."
+##############################################################################
+# ICD hosting model properties
+##############################################################################
+
+variable "members" {
+  type        = number
+  description = "Allocated number of members. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 3
+}
+
+variable "cpu_count" {
+  type        = number
+  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 0
+}
+
+variable "disk_mb" {
+  type        = number
+  description = "Allocated disk per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  default     = 1024
+}
+
+variable "member_host_flavor" {
   type        = string
+  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
   default     = null
 }
 
-variable "tags" {
-  type        = list(any)
-  description = "Optional list of tags to be added to the RabbitMQ instance."
-  default     = []
-}
-
-variable "kms_key_crn" {
-  type        = string
-  description = "The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. Only used if var.kms_encryption_enabled is set to true."
-  default     = null
-}
-
-variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto Services instance."
-  type        = string
-}
-
-variable "skip_iam_authorization_policy" {
-  type        = bool
-  description = "Set to true to skip the creation of an IAM authorization policy that permits all RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
-  default     = false
-}
-
-variable "backup_encryption_key_crn" {
-  type        = string
-  description = "The CRN of a Hyper Protect Crypto Service use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
-  default     = null
-  # Validation happens in the root module
+variable "memory_mb" {
+  type        = number
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
+  default     = 8192
 }
 
 variable "admin_pass" {
@@ -61,13 +65,6 @@ variable "admin_pass" {
   sensitive   = true
 }
 
-variable "members" {
-  type        = number
-  description = "Allocated number of members. For more information, see: https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  default     = 3
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
-}
-
 variable "users" {
   type = list(object({
     name     = string
@@ -75,41 +72,32 @@ variable "users" {
     type     = string # "type" is required to generate the connection string for the outputs.
     role     = optional(string)
   }))
+  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users, more info on that can be found here https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-user-management"
   default     = []
   sensitive   = true
-  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users, more info on that can be found here https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-user-management"
 }
 
 variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
   type        = map(string)
+  description = "Map of name, role for service credentials that you want to create for the database"
   default     = {}
 }
 
-variable "memory_mb" {
-  type        = number
-  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
-  default     = 8192
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+variable "tags" {
+  type        = list(any)
+  description = "Optional list of tags to be added to the RabbitMQ instance."
+  default     = []
 }
 
-variable "disk_mb" {
-  description = "Allocated disk per member. For more information, see https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  type        = number
-  default     = 1024
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
 }
 
-variable "cpu_count" {
-  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling"
-  type        = number
-  default     = 0
-}
-
-variable "member_host_flavor" {
-  type        = string
-  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
-  default     = null
-}
+##############################################################
+# Auto Scaling
+##############################################################
 
 variable "auto_scaling" {
   type = object({
@@ -138,6 +126,37 @@ variable "auto_scaling" {
   default     = null
 }
 
+##############################################################
+# Encryption
+##############################################################
+
+variable "kms_key_crn" {
+  type        = string
+  description = "The root key CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Services (HPCS) that you want to use for disk encryption. Only used if var.kms_encryption_enabled is set to true."
+  default     = null
+}
+
+variable "backup_encryption_key_crn" {
+  type        = string
+  description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  default     = null
+}
+
+variable "skip_iam_authorization_policy" {
+  type        = bool
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
+  default     = false
+}
+
+variable "existing_kms_instance_guid" {
+  type        = string
+  description = "The GUID of the Hyper Protect Crypto Services instance."
+}
+
+##############################################################
+# Context-based restriction (CBR)
+##############################################################
+
 variable "cbr_rules" {
   type = list(object({
     description = string
@@ -154,11 +173,9 @@ variable "cbr_rules" {
   # Validation happens in the rule module
 }
 
-variable "access_tags" {
-  type        = list(string)
-  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
-  default     = []
-}
+##############################################################
+# Backup
+##############################################################
 
 variable "backup_crn" {
   type        = string
