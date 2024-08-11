@@ -21,7 +21,7 @@ variable "users" {
   type = list(object({
     name     = string
     password = string
-    type     = string
+    type     = optional(string)
     role     = optional(string)
   }))
   default     = []
