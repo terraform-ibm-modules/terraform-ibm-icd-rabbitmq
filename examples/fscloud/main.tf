@@ -54,20 +54,32 @@ module "cbr_zone" {
 ##############################################################################
 
 module "rabbitmq_database" {
-  source                     = "../../modules/fscloud"
-  resource_group_id          = module.resource_group.resource_group_id
-  instance_name              = "${var.prefix}-rabbitmq"
-  region                     = var.region
-  rabbitmq_version           = var.rabbitmq_version
-  kms_key_crn                = var.kms_key_crn
-  existing_kms_instance_guid = var.existing_kms_instance_guid
-  service_credential_names   = var.service_credential_names
-  tags                       = var.tags
-  access_tags                = var.access_tags
-  auto_scaling               = var.auto_scaling
-  member_host_flavor         = "b3c.4x16.encrypted"
-  backup_encryption_key_crn  = var.backup_encryption_key_crn
-  backup_crn                 = var.backup_crn
+  source                    = "../../modules/fscloud"
+  resource_group_id         = module.resource_group.resource_group_id
+  instance_name             = "${var.prefix}-rabbitmq"
+  region                    = var.region
+  rabbitmq_version          = var.rabbitmq_version
+  kms_key_crn               = var.kms_key_crn
+  backup_encryption_key_crn = var.backup_encryption_key_crn
+  backup_crn                = var.backup_crn
+  service_credential_names = {
+    "rabbitmq_admin" : "Administrator",
+    "rabbitmq_operator" : "Operator",
+    "rabbitmq_viewer" : "Viewer",
+    "rabbitmq_editor" : "Editor",
+  }
+  auto_scaling = {
+    disk = {
+      capacity_enabled : true,
+      io_enabled : true
+    }
+    memory = {
+      io_enabled : true,
+    }
+  }
+  member_host_flavor = "b3c.4x16.encrypted"
+  tags               = var.tags
+  access_tags        = var.access_tags
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"
