@@ -98,7 +98,7 @@ variable "users" {
   }))
   default     = []
   sensitive   = true
-description = "A list of users that you want to create on the database. Users block is supported by RabbitMQ version >= 6.0. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/blob/main/solutions/standard/DA-types.md#users)"
+  description = "A list of users that you want to create on the database. Users block is supported by RabbitMQ version >= 6.0. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/blob/main/solutions/standard/DA-types.md#users)"
 }
 
 variable "tags" {

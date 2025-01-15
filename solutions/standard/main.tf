@@ -28,7 +28,7 @@ locals {
 #######################################################################################################################
 
 locals {
-  create_new_kms_key    = !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? true : false # no need to create any KMS resources if passing an existing key, or using IBM owned keys
+  create_new_kms_key     = !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? true : false # no need to create any KMS resources if passing an existing key, or using IBM owned keys
   rabbitmq_key_name      = var.prefix != null ? "${var.prefix}-${var.key_name}" : var.key_name
   rabbitmq_key_ring_name = var.prefix != null ? "${var.prefix}-${var.key_ring_name}" : var.key_ring_name
 }
@@ -250,7 +250,7 @@ module "rabbitmq" {
   resource_group_id                 = module.resource_group.resource_group_id
   instance_name                     = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
   region                            = var.region
-  rabbitmq_version                   = var.rabbitmq_version
+  rabbitmq_version                  = var.rabbitmq_version
   skip_iam_authorization_policy     = var.skip_rabbitmq_kms_auth_policy
   use_ibm_owned_encryption_key      = var.use_ibm_owned_encryption_key
   kms_key_crn                       = local.kms_key_crn
