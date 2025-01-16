@@ -29,17 +29,6 @@ variable "users" {
   description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters."
 }
 
-variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
-  type        = map(string)
-  default = {
-    "rabbit_admin" : "Administrator",
-    "rabbit_operator" : "Operator",
-    "rabbit_viewer" : "Viewer",
-    "rabbit_editor" : "Editor",
-  }
-}
-
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"

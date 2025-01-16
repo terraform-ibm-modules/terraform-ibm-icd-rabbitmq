@@ -14,6 +14,11 @@ module "resource_group" {
 # Key Protect All Inclusive
 ##############################################################################
 
+locals {
+  data_key_name    = "${var.prefix}-rabbitmq"
+  backups_key_name = "${var.prefix}-rabbitmq-backups"
+}
+
 module "key_protect_all_inclusive" {
   source            = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version           = "4.19.2"
@@ -28,7 +33,11 @@ module "key_protect_all_inclusive" {
       key_ring_name = "icd"
       keys = [
         {
-          key_name     = "${var.prefix}-rabbitmq"
+          key_name     = local.data_key_name
+          force_delete = true
+        },
+        {
+          key_name     = local.backups_key_name
           force_delete = true
         }
       ]
@@ -81,21 +90,28 @@ module "cbr_zone" {
 ##############################################################################
 
 module "icd_rabbitmq" {
-  source                     = "../../"
-  resource_group_id          = module.resource_group.resource_group_id
-  instance_name              = "${var.prefix}-rabbitmq"
-  region                     = var.region
-  kms_encryption_enabled     = true
-  existing_kms_instance_guid = module.key_protect_all_inclusive.kms_guid
-  service_credential_names   = var.service_credential_names
-  admin_pass                 = var.admin_pass
-  users                      = var.users
-  rabbitmq_version           = var.rabbitmq_version
-  kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-rabbitmq"].crn
-  tags                       = var.resource_tags
-  access_tags                = var.access_tags
-  auto_scaling               = var.auto_scaling
-  member_host_flavor         = "multitenant"
+  source            = "../../"
+  resource_group_id = module.resource_group.resource_group_id
+  instance_name     = "${var.prefix}-rabbitmq"
+  region            = var.region
+  admin_pass        = var.admin_pass
+  users             = var.users
+  rabbitmq_version  = var.rabbitmq_version
+  tags              = var.resource_tags
+  access_tags       = var.access_tags
+  auto_scaling      = var.auto_scaling
+  # Example of how to use different KMS keys for data and backups
+  use_ibm_owned_encryption_key = false
+  use_same_kms_key_for_backups = false
+  kms_key_crn                  = module.key_protect_all_inclusive.keys["icd.${local.data_key_name}"].crn
+  backup_encryption_key_crn    = module.key_protect_all_inclusive.keys["icd.${local.data_key_name}"].crn
+  service_credential_names = {
+    "rabbitmq_admin" : "Administrator",
+    "rabbitmq_operator" : "Operator",
+    "rabbitmq_viewer" : "Viewer",
+    "rabbitmq_editor" : "Editor",
+  }
+  member_host_flavor = "multitenant"
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"
