@@ -55,7 +55,7 @@ variable "members" {
 variable "member_memory_mb" {
   type        = number
   description = "The memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
-  default     = 4096
+  default     = 8192
 }
 
 variable "member_cpu_count" {
@@ -67,7 +67,7 @@ variable "member_cpu_count" {
 variable "member_disk_mb" {
   type        = number
   description = "The disk that is allocated per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
-  default     = 10240
+  default     = 1024
 }
 
 variable "member_host_flavor" {
