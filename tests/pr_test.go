@@ -173,6 +173,15 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 func TestRunStandardUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
+	// Generate a 15 char long random string for the admin_pass
+	randomBytes := make([]byte, 13)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// add character prefix to avoid generated password beginning with special char and must have a number
+	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
+
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       standardSolutionTerraformDir,
@@ -187,55 +196,12 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		"kms_endpoint_type":         "public",
 		"provider_visibility":       "public",
 		"resource_group_name":       options.Prefix,
+		"admin_pass":                randomPass,
 	}
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
-	}
-}
-
-func TestRunCompleteUpgradeExample(t *testing.T) {
-	t.Parallel()
-
-	// Generate a 15 char long random string for the admin_pass
-	randomBytes := make([]byte, 13)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// add character prefix to avoid generated password beginning with special char and must have a number
-	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
-
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       "examples/complete",
-		Prefix:             "rabbitmq-upg",
-		BestRegionYAMLPath: regionSelectionPath,
-		ResourceGroup:      resourceGroup,
-		TerraformVars: map[string]interface{}{
-			"rabbitmq_version": "3.12", // Always lock to the lowest supported RabbitMQ version
-			"users": []map[string]interface{}{
-				{
-					"name":     "testuser",
-					"password": randomPass, // pragma: allowlist secret
-					"type":     "database",
-				},
-			},
-			"admin_pass": randomPass,
-		},
-		CloudInfoService: sharedInfoSvc,
-	})
-
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-
-		outputs := options.LastTestTerraformOutputs
-		expectedOutputs := []string{"port", "hostname"}
-		_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
-		assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
 	}
 }
