@@ -95,6 +95,14 @@ variable "access_tags" {
   default     = []
 }
 
+variable "configuration" {
+  type = object({
+    delete_undefined_queues = optional(bool)
+  })
+  description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
+  default     = null
+}
+
 ##############################################################
 # Auto Scaling
 ##############################################################

@@ -24,4 +24,5 @@ module "rabbitmq_database" {
   member_host_flavor                = var.member_host_flavor
   auto_scaling                      = var.auto_scaling
   cbr_rules                         = var.cbr_rules
+  configuration                     = var.configuration
 }

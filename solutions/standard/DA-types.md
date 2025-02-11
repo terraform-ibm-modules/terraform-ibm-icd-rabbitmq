@@ -197,3 +197,28 @@ The following example shows values for both disk and memory for the `auto_scalin
   }
 }
 ```
+
+## Configuration  <a name="configuration"></a>
+
+The Configuration variable tunes the MySQL database to suit different use case. For more information, see [Configuration](https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=cli).
+
+- Variable name: `configuration`
+- Type: An object with multiple attributes i.e.  `default_authentication_plugin`
+
+### Options for configuration
+
+The configuration object in the input contains the following options
+
+**Available Settings. [Learn more](https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=cli#available-config-settings).**
+
+- `default_authentication_plugin`: Automatically delete undefined queues. (default: `???`).
+
+### Example configuration
+
+The following example shows values for the `configuration` input.
+
+```hcl
+{
+    default_authentication_plugin      = true
+}
+```
