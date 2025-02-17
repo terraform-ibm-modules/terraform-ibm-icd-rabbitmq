@@ -317,6 +317,9 @@
             },
             {
               "key": "use_default_backup_encryption_key"
+            },
+            {
+              "key": "configuration"
             }
           ]
         }
