@@ -197,3 +197,28 @@ The following example shows values for both disk and memory for the `auto_scalin
   }
 }
 ```
+
+## Configuration  <a name="configuration"></a>
+
+The Configuration variable tunes messages for RabbitMQ to suit different use case. For more information, see [Configuration](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request).
+
+- Variable name: `configuration`
+- Type: An object with multiple attributes i.e.  `delete_undefined_queues`
+
+### Options for configuration
+
+The configuration object in the input contains the following options
+
+**Available Settings. [Learn more](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request)**
+
+- `delete_undefined_queues`: Automatically delete undefined queues. (default: `???`).
+
+### Example configuration
+
+The following example shows values for the `configuration` input.
+
+```hcl
+{
+    delete_undefined_queues      = true
+}
+```
