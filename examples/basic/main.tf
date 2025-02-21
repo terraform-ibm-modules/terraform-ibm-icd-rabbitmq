@@ -14,10 +14,10 @@ module "resource_group" {
 # RabbitMQ
 ##############################################################################
 
-module "icd_rabbitmq" {
+module "database" {
   source            = "../.."
   resource_group_id = module.resource_group.resource_group_id
-  instance_name     = "${var.prefix}-rabbitmq"
+  name              = "${var.prefix}-rabbitmq"
   region            = var.region
   tags              = var.resource_tags
   access_tags       = var.access_tags

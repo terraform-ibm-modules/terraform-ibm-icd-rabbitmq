@@ -42,6 +42,12 @@ variable "rabbitmq_version" {
   default     = null
 }
 
+variable "existing_db_instance_crn" {
+  type        = string
+  default     = null
+  description = "The CRN of an existing Messages for RabbitMQ instance. If no value is specified, a new instance is created."
+}
+
 ##############################################################################
 # ICD hosting model properties
 ##############################################################################
@@ -293,4 +299,46 @@ variable "skip_rabbitmq_sm_auth_policy" {
   type        = bool
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for RabbitMQ. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the RabbitMQ instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
   default     = false
+}
+
+variable "admin_pass_secrets_manager_secret_group" {
+  type        = string
+  description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_secrets_manager_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "elasticsearch-secrets"
+}
+
+variable "use_existing_admin_pass_secrets_manager_secret_group" {
+  type        = bool
+  description = "Whether to use an existing secrets manager secret group for admin password."
+  default     = false
+}
+
+variable "admin_pass_secrets_manager_secret_name" {
+  type        = string
+  description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "elasticsearch-admin-password"
+}
+
+##############################################################
+# Context-based restriction (CBR)
+##############################################################
+
+variable "cbr_rules" {
+  type = list(object({
+    description = string
+    account_id  = string
+    rule_contexts = list(object({
+      attributes = optional(list(object({
+        name  = string
+        value = string
+    }))) }))
+    enforcement_mode = string
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
+  }))
+  description = "(Optional, list) List of context-based restrictions rules to create. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
+  default     = []
 }

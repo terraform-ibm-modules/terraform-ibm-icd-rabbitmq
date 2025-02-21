@@ -1,10 +1,10 @@
 module "rabbitmq_database" {
   source                            = "../../"
   resource_group_id                 = var.resource_group_id
-  instance_name                     = var.instance_name
+  name                              = var.name
   region                            = var.region
   skip_iam_authorization_policy     = var.skip_iam_authorization_policy
-  endpoints                         = "private"
+  service_endpoints                 = "private"
   rabbitmq_version                  = var.rabbitmq_version
   tags                              = var.tags
   access_tags                       = var.access_tags
