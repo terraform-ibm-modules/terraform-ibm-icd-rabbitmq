@@ -304,7 +304,7 @@ variable "skip_rabbitmq_sm_auth_policy" {
 variable "admin_pass_secrets_manager_secret_group" {
   type        = string
   description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_secrets_manager_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = "elasticsearch-secrets"
+  default     = "rabbitmq-secrets"
 }
 
 variable "use_existing_admin_pass_secrets_manager_secret_group" {
@@ -315,8 +315,8 @@ variable "use_existing_admin_pass_secrets_manager_secret_group" {
 
 variable "admin_pass_secrets_manager_secret_name" {
   type        = string
-  description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = "elasticsearch-admin-password"
+  description = "The name of a new rabbitmq administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "rabbitmq-admin-password"
 }
 
 ##############################################################
@@ -339,6 +339,6 @@ variable "cbr_rules" {
       }))
     })))
   }))
-  description = "(Optional, list) List of context-based restrictions rules to create. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
+  description = "(Optional, list) List of context-based restrictions rules to create."
   default     = []
 }
