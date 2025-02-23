@@ -22,4 +22,5 @@ module "database" {
   tags              = var.resource_tags
   access_tags       = var.access_tags
   rabbitmq_version  = var.rabbitmq_version
+  service_endpoints = var.service_endpoints
 }
