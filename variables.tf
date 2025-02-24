@@ -7,7 +7,7 @@ variable "resource_group_id" {
   description = "The resource group ID where the RabbitMQ instance will be created."
 }
 
-variable "instance_name" {
+variable "name" {
   type        = string
   description = "The name to give the RabbitMQ instance"
 }
@@ -115,13 +115,13 @@ variable "service_credential_names" {
   }
 }
 
-variable "endpoints" {
+variable "service_endpoints" {
   type        = string
   description = "Endpoints available to the database instance (public, private, public-and-private)"
   default     = "private"
 
   validation {
-    condition     = can(regex("public|public-and-private|private", var.endpoints))
+    condition     = can(regex("public|public-and-private|private", var.service_endpoints))
     error_message = "Valid values for endpoints are 'public', 'public-and-private', and 'private'"
   }
 }

@@ -56,7 +56,7 @@ module "cbr_zone" {
 module "rabbitmq_database" {
   source                    = "../../modules/fscloud"
   resource_group_id         = module.resource_group.resource_group_id
-  instance_name             = "${var.prefix}-rabbitmq"
+  name                      = "${var.prefix}-rabbitmq"
   region                    = var.region
   rabbitmq_version          = var.rabbitmq_version
   kms_key_crn               = var.kms_key_crn
