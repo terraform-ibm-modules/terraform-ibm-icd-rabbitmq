@@ -117,12 +117,12 @@ variable "service_credential_names" {
 
 variable "service_endpoints" {
   type        = string
-  description = "Endpoints available to the database instance (public, private, public-and-private)"
+  description = "Specify whether you want to enable the public, private, or both service endpoints. Supported values are 'public', 'private', or 'public-and-private'."
   default     = "private"
 
   validation {
     condition     = can(regex("public|public-and-private|private", var.service_endpoints))
-    error_message = "Valid values for endpoints are 'public', 'public-and-private', and 'private'"
+    error_message = "Valid values for service_endpoints are 'public', 'public-and-private', and 'private'"
   }
 }
 
@@ -248,10 +248,18 @@ variable "cbr_rules" {
         value = string
     }))) }))
     enforcement_mode = string
+    tags = optional(list(object({
+      name  = string
+      value = string
+    })))
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
   }))
-  description = "(Optional, list) List of CBR rules to create"
+  description = "(Optional, list) List of context-based restrictions rules to create."
   default     = []
-  # Validation happens in the rule module
 }
 
 ##############################################################
