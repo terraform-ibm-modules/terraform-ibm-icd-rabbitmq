@@ -211,7 +211,7 @@ The configuration object in the input contains the following options
 
 **Available Settings. [Learn more](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request)**
 
-- `delete_undefined_queues`: Automatically delete undefined queues. (default: `???`).
+- `delete_undefined_queues`: Automatically delete undefined queues. (default: `true`).
 
 ### Example configuration
 
