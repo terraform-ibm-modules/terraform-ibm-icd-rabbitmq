@@ -4,63 +4,53 @@
 
 output "id" {
   description = "RabbitMQ instance id"
-  value       = module.rabbitmq.id
+  value       = local.rabbitmq_id
 }
 
 output "version" {
   description = "RabbitMQ instance version"
-  value       = module.rabbitmq.version
+  value       = local.rabbitmq_version
 }
 
 output "guid" {
   description = "RabbitMQ instance guid"
-  value       = module.rabbitmq.guid
+  value       = local.rabbitmq_guid
 }
 
 output "crn" {
   description = "RabbitMQ instance crn"
-  value       = module.rabbitmq.crn
-}
-
-output "cbr_rule_ids" {
-  description = "CBR rule ids created to restrict RabbitMQ"
-  value       = module.rabbitmq.cbr_rule_ids
+  value       = local.rabbitmq_crn
 }
 
 output "service_credentials_json" {
   description = "Service credentials json map"
-  value       = module.rabbitmq.service_credentials_json
+  value       = var.existing_rabbitmq_instance_crn != null ? null : module.rabbitmq[0].service_credentials_json
   sensitive   = true
 }
 
 output "service_credentials_object" {
   description = "Service credentials object"
-  value       = module.rabbitmq.service_credentials_object
+  value       = var.existing_rabbitmq_instance_crn != null ? null : module.rabbitmq[0].service_credentials_object
   sensitive   = true
-}
-
-output "adminuser" {
-  description = "Database admin user name"
-  value       = module.rabbitmq.adminuser
 }
 
 output "hostname" {
   description = "Database connection hostname"
-  value       = module.rabbitmq.hostname
+  value       = local.rabbitmq_hostname
 }
 
 output "port" {
   description = "Database connection port"
-  value       = module.rabbitmq.port
-}
-
-output "certificate_base64" {
-  description = "Database connection certificate"
-  value       = module.rabbitmq.certificate_base64
-  sensitive   = true
+  value       = local.rabbitmq_port
 }
 
 output "secrets_manager_secrets" {
   description = "Service credential secrets"
   value       = length(local.service_credential_secrets) > 0 ? module.secrets_manager_service_credentials[0].secrets : null
+}
+
+output "admin_pass" {
+  description = "RabbitMQ administrator password"
+  value       = local.admin_pass
+  sensitive   = true
 }

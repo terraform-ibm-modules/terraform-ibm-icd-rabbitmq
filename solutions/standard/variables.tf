@@ -42,6 +42,12 @@ variable "rabbitmq_version" {
   default     = null
 }
 
+variable "existing_rabbitmq_instance_crn" {
+  type        = string
+  default     = null
+  description = "The CRN of an existing Messages for RabbitMQ instance. If no value is specified, a new instance is created."
+}
+
 ##############################################################################
 # ICD hosting model properties
 ##############################################################################
@@ -293,4 +299,50 @@ variable "skip_rabbitmq_sm_auth_policy" {
   type        = bool
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for RabbitMQ. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the RabbitMQ instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
   default     = false
+}
+
+variable "admin_pass_secrets_manager_secret_group" {
+  type        = string
+  description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_secrets_manager_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "rabbitmq-secrets"
+}
+
+variable "use_existing_admin_pass_secrets_manager_secret_group" {
+  type        = bool
+  description = "Whether to use an existing secrets manager secret group for admin password."
+  default     = false
+}
+
+variable "admin_pass_secrets_manager_secret_name" {
+  type        = string
+  description = "The name of a new rabbitmq administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "rabbitmq-admin-password"
+}
+
+##############################################################
+# Context-based restriction (CBR)
+##############################################################
+
+variable "cbr_rules" {
+  type = list(object({
+    description = string
+    account_id  = string
+    rule_contexts = list(object({
+      attributes = optional(list(object({
+        name  = string
+        value = string
+    }))) }))
+    enforcement_mode = string
+    tags = optional(list(object({
+      name  = string
+      value = string
+    })))
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
+  }))
+  description = "(Optional, list) List of context-based restrictions rules to create."
+  default     = []
 }
