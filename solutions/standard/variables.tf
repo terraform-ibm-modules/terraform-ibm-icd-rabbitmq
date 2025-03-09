@@ -42,7 +42,7 @@ variable "rabbitmq_version" {
   default     = null
 }
 
-variable "existing_db_instance_crn" {
+variable "existing_rabbitmq_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Messages for RabbitMQ instance. If no value is specified, a new instance is created."
