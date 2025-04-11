@@ -34,6 +34,11 @@ variable "region" {
   description = "The region where you want to deploy your instance."
   type        = string
   default     = "us-south"
+
+  validation {
+    condition     = var.existing_rabbitmq_instance_crn != null && var.region != local.existing_rabbitmq_region ? false : true
+    error_message = "The region detected in the 'existing_rabbitmq_instance_crn' value must match the value of the 'region' input variable when passing an existing instance."
+  }
 }
 
 variable "rabbitmq_version" {
@@ -56,6 +61,8 @@ variable "existing_rabbitmq_instance_crn" {
     condition     = var.existing_rabbitmq_instance_crn != null ? true : !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? false : true
     error_message = "When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key."
   }
+
+
 }
 
 ##############################################################################
