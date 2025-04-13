@@ -278,6 +278,11 @@ variable "existing_secrets_manager_instance_crn" {
     condition     = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_name == null ? false : true
     error_message = "`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
   }
+
+  validation {
+    condition     = length(var.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? false : true
+    error_message = "`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret."
+  }
 }
 
 variable "existing_secrets_manager_endpoint_type" {
