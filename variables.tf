@@ -187,21 +187,29 @@ variable "use_ibm_owned_encryption_key" {
 
   validation {
     condition     = var.use_ibm_owned_encryption_key && (var.kms_key_crn != null || var.backup_encryption_key_crn != null) ? false : true
-    error_message = "When passing values for 'kms_key_crn' or 'backup_encryption_key_crn', you must set 'use_ibm_owned_encryption_key' to false. Otherwise unset them to use default encryption."
+    error_message = "When 'use_ibm_owned_encryption_key' is true, 'kms_key_crn' and 'backup_encryption_key_crn' must both be null."
   }
 
   validation {
-    condition     = !var.use_ibm_owned_encryption_key && var.kms_key_crn == null ? false : true
+    condition     = var.use_ibm_owned_encryption_key || var.kms_key_crn != null
     error_message = "When setting 'use_ibm_owned_encryption_key' to false, a value must be passed for 'kms_key_crn'."
   }
 
   validation {
-    condition     = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn != null && (var.use_default_backup_encryption_key || var.use_same_kms_key_for_backups) ? false : true
+    condition = (
+      var.use_ibm_owned_encryption_key ||
+      var.backup_encryption_key_crn == null ||
+      (!var.use_default_backup_encryption_key && !var.use_same_kms_key_for_backups)
+    )
     error_message = "When passing a value for backup_encryption_key_crn, you should set use_same_kms_key_for_backups to false, use_default_backup_encryption_key to false and use_ibm_owned_encryption_key to false."
   }
 
   validation {
-    condition     = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn == null && !var.use_same_kms_key_for_backups ? false : true
+    condition = (
+      var.use_ibm_owned_encryption_key ||
+      var.backup_encryption_key_crn != null ||
+      var.use_same_kms_key_for_backups
+    )
     error_message = "When 'use_same_kms_key_for_backups' is set to false, a value needs to be passed for 'backup_encryption_key_crn'."
   }
 }
