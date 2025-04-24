@@ -4,7 +4,7 @@
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.1.6"
+  version = "1.2.0"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -21,7 +21,7 @@ locals {
 
 module "key_protect_all_inclusive" {
   source            = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version           = "4.20.0"
+  version           = "4.21.10"
   resource_group_id = module.resource_group.resource_group_id
   # Note: Database instance and Key Protect must be created in the same region when using BYOK
   # See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok
@@ -75,7 +75,7 @@ resource "ibm_is_subnet" "testacc_subnet" {
 ##############################################################################
 
 module "cbr_zone" {
-  source           = "git::https://github.com/terraform-ibm-modules/terraform-ibm-cbr//modules/cbr-zone-module?ref=v1.29.0"
+  source           = "git::https://github.com/terraform-ibm-modules/terraform-ibm-cbr//modules/cbr-zone-module?ref=v1.30.0"
   name             = "${var.prefix}-VPC-network-zone"
   zone_description = "CBR Network zone representing VPC"
   account_id       = data.ibm_iam_account_settings.iam_account_settings.account_id
@@ -92,7 +92,7 @@ module "cbr_zone" {
 module "icd_rabbitmq" {
   source            = "../../"
   resource_group_id = module.resource_group.resource_group_id
-  instance_name     = "${var.prefix}-rabbitmq"
+  name              = "${var.prefix}-rabbitmq"
   region            = var.region
   admin_pass        = var.admin_pass
   users             = var.users

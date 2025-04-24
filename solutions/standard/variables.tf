@@ -34,12 +34,23 @@ variable "region" {
   description = "The region where you want to deploy your instance."
   type        = string
   default     = "us-south"
+
+  validation {
+    condition     = var.existing_rabbitmq_instance_crn != null && var.region != local.existing_rabbitmq_region ? false : true
+    error_message = "The region detected in the 'existing_rabbitmq_instance_crn' value must match the value of the 'region' input variable when passing an existing instance."
+  }
 }
 
 variable "rabbitmq_version" {
   description = "The version of the Databases for RabbitMQ instance. If no value is specified, the current preferred version of Databases for RabbitMQ is used."
   type        = string
   default     = null
+}
+
+variable "existing_rabbitmq_instance_crn" {
+  type        = string
+  default     = null
+  description = "The CRN of an existing Messages for RabbitMQ instance. If no value is specified, a new instance is created."
 }
 
 ##############################################################################
@@ -132,6 +143,30 @@ variable "use_ibm_owned_encryption_key" {
   type        = bool
   description = "IBM Cloud Databases will secure your deployment's data at rest automatically with an encryption key that IBM hold. Alternatively, you may select your own Key Management System instance and encryption key (Key Protect or Hyper Protect Crypto Services) by setting this to false. If setting to false, a value must be passed for `existing_kms_instance_crn` to create a new key, or `existing_kms_key_crn` and/or `existing_backup_kms_key_crn` to use an existing key."
   default     = false
+
+  # this validation ensures IBM-owned key is not used when KMS details are provided
+  validation {
+    condition = (
+      var.existing_rabbitmq_instance_crn != null ||
+      !(var.use_ibm_owned_encryption_key && (
+        var.existing_kms_instance_crn != null ||
+        var.existing_kms_key_crn != null ||
+        var.existing_backup_kms_key_crn != null
+      ))
+    )
+    error_message = "When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false."
+  }
+
+  # this validation ensures key info is provided when IBM-owned key is disabled and no RabbitMQ instance is given
+  validation {
+    condition = !(
+      var.existing_rabbitmq_instance_crn == null &&
+      var.use_ibm_owned_encryption_key == false &&
+      var.existing_kms_instance_crn == null &&
+      var.existing_kms_key_crn == null
+    )
+    error_message = "When 'use_ibm_owned_encryption_key' is false, you must provide either 'existing_kms_instance_crn' (to create a new key) or 'existing_kms_key_crn' (to use an existing key)."
+  }
 }
 
 variable "existing_kms_instance_crn" {
@@ -298,10 +333,80 @@ variable "service_credential_secrets" {
     ])
     error_message = "service_credentials_source_service_role_crn must be a serviceRole CRN. See https://cloud.ibm.com/iam/roles"
   }
+
+  validation {
+    condition = (
+      length(var.service_credential_secrets) == 0 ||
+      var.existing_secrets_manager_instance_crn != null
+    )
+    error_message = "`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret."
+  }
 }
 
 variable "skip_rabbitmq_sm_auth_policy" {
   type        = bool
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for RabbitMQ. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the RabbitMQ instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
   default     = false
+}
+
+variable "admin_pass_secrets_manager_secret_group" {
+  type        = string
+  description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_secrets_manager_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "rabbitmq-secrets"
+
+  validation {
+    condition = (
+      var.existing_secrets_manager_instance_crn == null ||
+      var.admin_pass_secrets_manager_secret_group != null
+    )
+    error_message = "`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set."
+  }
+}
+
+variable "use_existing_admin_pass_secrets_manager_secret_group" {
+  type        = bool
+  description = "Whether to use an existing secrets manager secret group for admin password."
+  default     = false
+}
+
+variable "admin_pass_secrets_manager_secret_name" {
+  type        = string
+  description = "The name of a new rabbitmq administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "rabbitmq-admin-password"
+
+  validation {
+    condition = (
+      var.existing_secrets_manager_instance_crn == null ||
+      var.admin_pass_secrets_manager_secret_name != null
+    )
+    error_message = "`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
+  }
+}
+
+##############################################################
+# Context-based restriction (CBR)
+##############################################################
+
+variable "cbr_rules" {
+  type = list(object({
+    description = string
+    account_id  = string
+    rule_contexts = list(object({
+      attributes = optional(list(object({
+        name  = string
+        value = string
+    }))) }))
+    enforcement_mode = string
+    tags = optional(list(object({
+      name  = string
+      value = string
+    })))
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
+  }))
+  description = "(Optional, list) List of context-based restrictions rules to create."
+  default     = []
 }

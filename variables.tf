@@ -7,7 +7,7 @@ variable "resource_group_id" {
   description = "The resource group ID where the RabbitMQ instance will be created."
 }
 
-variable "instance_name" {
+variable "name" {
   type        = string
   description = "The name to give the RabbitMQ instance"
 }
@@ -115,14 +115,14 @@ variable "service_credential_names" {
   }
 }
 
-variable "endpoints" {
+variable "service_endpoints" {
   type        = string
-  description = "Endpoints available to the database instance (public, private, public-and-private)"
+  description = "Specify whether you want to enable the public, private, or both service endpoints. Supported values are 'public', 'private', or 'public-and-private'."
   default     = "private"
 
   validation {
-    condition     = can(regex("public|public-and-private|private", var.endpoints))
-    error_message = "Valid values for endpoints are 'public', 'public-and-private', and 'private'"
+    condition     = can(regex("public|public-and-private|private", var.service_endpoints))
+    error_message = "Valid values for service_endpoints are 'public', 'public-and-private', and 'private'"
   }
 }
 
@@ -192,6 +192,34 @@ variable "use_ibm_owned_encryption_key" {
   type        = bool
   description = "IBM Cloud Databases will secure your deployment's data at rest automatically with an encryption key that IBM hold. Alternatively, you may select your own Key Management System instance and encryption key (Key Protect or Hyper Protect Crypto Services) by setting this to false. If setting to false, a value must be passed for the `kms_key_crn` input."
   default     = true
+
+  validation {
+    condition     = var.use_ibm_owned_encryption_key && (var.kms_key_crn != null || var.backup_encryption_key_crn != null) ? false : true
+    error_message = "When 'use_ibm_owned_encryption_key' is true, 'kms_key_crn' and 'backup_encryption_key_crn' must both be null."
+  }
+
+  validation {
+    condition     = var.use_ibm_owned_encryption_key || var.kms_key_crn != null
+    error_message = "When setting 'use_ibm_owned_encryption_key' to false, a value must be passed for 'kms_key_crn'."
+  }
+
+  validation {
+    condition = (
+      var.use_ibm_owned_encryption_key ||
+      var.backup_encryption_key_crn == null ||
+      (!var.use_default_backup_encryption_key && !var.use_same_kms_key_for_backups)
+    )
+    error_message = "When passing a value for backup_encryption_key_crn, you should set use_same_kms_key_for_backups to false, use_default_backup_encryption_key to false and use_ibm_owned_encryption_key to false."
+  }
+
+  validation {
+    condition = (
+      var.use_ibm_owned_encryption_key ||
+      var.backup_encryption_key_crn != null ||
+      var.use_same_kms_key_for_backups
+    )
+    error_message = "When 'use_same_kms_key_for_backups' is set to false, a value needs to be passed for 'backup_encryption_key_crn'."
+  }
 }
 
 variable "use_default_backup_encryption_key" {
@@ -256,10 +284,18 @@ variable "cbr_rules" {
         value = string
     }))) }))
     enforcement_mode = string
+    tags = optional(list(object({
+      name  = string
+      value = string
+    })))
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
   }))
-  description = "(Optional, list) List of CBR rules to create"
+  description = "(Optional, list) List of context-based restrictions rules to create."
   default     = []
-  # Validation happens in the rule module
 }
 
 ##############################################################

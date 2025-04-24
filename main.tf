@@ -1,16 +1,15 @@
+########################################################################################################################
+# Input variable validation
+# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
+#
+# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
+########################################################################################################################
+
+########################################################################################################################
+# Locals
+########################################################################################################################
+
 locals {
-  # Validation (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_values = var.use_ibm_owned_encryption_key && (var.kms_key_crn != null || var.backup_encryption_key_crn != null) ? tobool("When passing values for 'kms_key_crn' or 'backup_encryption_key_crn', you must set 'use_ibm_owned_encryption_key' to false. Otherwise unset them to use default encryption.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_vars = !var.use_ibm_owned_encryption_key && var.kms_key_crn == null ? tobool("When setting 'use_ibm_owned_encryption_key' to false, a value must be passed for 'kms_key_crn'.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_backup_key = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn != null && (var.use_default_backup_encryption_key || var.use_same_kms_key_for_backups) ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to true or 'use_ibm_owned_encryption_key' to false.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_backup_key_2 = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn == null && !var.use_same_kms_key_for_backups ? tobool("When 'use_same_kms_key_for_backups' is set to false, a value needs to be passed for 'backup_encryption_key_crn'.") : true
-
-  # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
-
   # If 'use_ibm_owned_encryption_key' is true or 'use_default_backup_encryption_key' is true, default to null.
   # If no value is passed for 'backup_encryption_key_crn', then default to use 'kms_key_crn'.
   backup_encryption_key_crn = var.use_ibm_owned_encryption_key || var.use_default_backup_encryption_key ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
@@ -20,6 +19,7 @@ locals {
 
   # Determine if host_flavor is used
   host_flavor_set = var.member_host_flavor != null ? true : false
+
 }
 
 ########################################################################################################################
@@ -165,14 +165,14 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 ########################################################################################################################
 
 resource "ibm_database" "rabbitmq_database" {
-  depends_on        = [time_sleep.wait_for_authorization_policy]
-  name              = var.instance_name
-  plan              = var.plan
-  location          = var.region
-  service           = "messages-for-rabbitmq"
-  version           = var.rabbitmq_version
-  resource_group_id = var.resource_group_id
-  service_endpoints = var.endpoints
+  depends_on                = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
+  name                      = var.name
+  plan                      = var.plan
+  location                  = var.region
+  service                   = "messages-for-rabbitmq"
+  version                   = var.rabbitmq_version
+  resource_group_id         = var.resource_group_id
+  service_endpoints         = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273
   configuration             = var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null
   tags                      = var.tags
@@ -310,7 +310,7 @@ resource "ibm_resource_tag" "rabbitmq_tag" {
 ##############################################################################
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
-  source           = "git::https://github.com/terraform-ibm-modules/terraform-ibm-cbr//modules/cbr-rule-module?ref=v1.29.0"
+  source           = "git::https://github.com/terraform-ibm-modules/terraform-ibm-cbr//modules/cbr-rule-module?ref=v1.30.0"
   rule_description = var.cbr_rules[count.index].description
   enforcement_mode = var.cbr_rules[count.index].enforcement_mode
   rule_contexts    = var.cbr_rules[count.index].rule_contexts
@@ -375,7 +375,7 @@ locals {
 }
 
 data "ibm_database_connection" "database_connection" {
-  endpoint_type = var.endpoints == "public-and-private" ? "public" : var.endpoints
+  endpoint_type = var.service_endpoints == "public-and-private" ? "public" : var.service_endpoints
   deployment_id = ibm_database.rabbitmq_database.id
   user_id       = ibm_database.rabbitmq_database.adminuser
   user_type     = "database"

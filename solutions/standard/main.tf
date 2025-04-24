@@ -4,7 +4,7 @@
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
-  version                      = "1.1.6"
+  version                      = "1.2.0"
   resource_group_name          = var.use_existing_resource_group == false ? (var.prefix != null ? "${var.prefix}-${var.resource_group_name}" : var.resource_group_name) : null
   existing_resource_group_name = var.use_existing_resource_group == true ? var.resource_group_name : null
 }
@@ -16,19 +16,12 @@ module "resource_group" {
 # TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
 #######################################################################################################################
 
-locals {
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_1 = var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) ? tobool("When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_2 = !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key.") : true
-}
-
 #######################################################################################################################
 # KMS encryption key
 #######################################################################################################################
 
 locals {
-  create_new_kms_key     = !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? true : false # no need to create any KMS resources if passing an existing key, or using IBM owned keys
+  create_new_kms_key     = var.existing_rabbitmq_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? true : false # no need to create any KMS resources if passing an existing key, or using IBM owned keys
   rabbitmq_key_name      = var.prefix != null ? "${var.prefix}-${var.key_name}" : var.key_name
   rabbitmq_key_ring_name = var.prefix != null ? "${var.prefix}-${var.key_ring_name}" : var.key_ring_name
 }
@@ -39,7 +32,7 @@ module "kms" {
   }
   count                       = local.create_new_kms_key ? 1 : 0
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.20.0"
+  version                     = "4.21.10"
   create_key_protect_instance = false
   region                      = local.kms_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -99,23 +92,24 @@ data "ibm_iam_account_settings" "iam_account_settings" {
 
 locals {
   account_id                                  = data.ibm_iam_account_settings.iam_account_settings.account_id
-  create_cross_account_kms_auth_policy        = !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
-  create_cross_account_backup_kms_auth_policy = !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key && var.existing_backup_kms_key_crn != null
+  create_cross_account_kms_auth_policy        = var.existing_rabbitmq_instance_crn == null && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
+  create_cross_account_backup_kms_auth_policy = var.existing_rabbitmq_instance_crn == null && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key && var.existing_backup_kms_key_crn != null
 
   # If KMS encryption enabled (and existing ES instance is not being passed), parse details from the existing key if being passed, otherwise get it from the key that the DA creates
-  kms_account_id    = var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
-  kms_service       = var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
-  kms_instance_guid = var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
-  kms_key_crn       = var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].crn
-  kms_key_id        = var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].key_id
-  kms_region        = var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
+  kms_account_id    = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
+  kms_service       = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
+  kms_instance_guid = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
+  kms_key_crn       = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].crn
+  kms_key_id        = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].key_id
+  kms_region        = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
 
   # If creating KMS cross account policy for backups, parse backup key details from passed in key CRN
   backup_kms_account_id    = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].account_id : local.kms_account_id
   backup_kms_service       = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].service_name : local.kms_service
   backup_kms_instance_guid = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].service_instance : local.kms_instance_guid
   backup_kms_key_id        = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].resource : local.kms_key_id
-  backup_kms_key_crn       = var.use_ibm_owned_encryption_key ? null : var.existing_backup_kms_key_crn
+
+  backup_kms_key_crn = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_backup_kms_key_crn
   # Always use same key for backups unless user explicially passed a value for 'existing_backup_kms_key_crn'
   use_same_kms_key_for_backups = var.existing_backup_kms_key_crn == null ? true : false
 }
@@ -240,12 +234,51 @@ locals {
 # RabbitMQ
 #######################################################################################################################
 
+# Look up existing instance details if user passes one
+module "rabbitmq_instance_crn_parser" {
+  count   = var.existing_rabbitmq_instance_crn != null ? 1 : 0
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.1.0"
+  crn     = var.existing_rabbitmq_instance_crn
+}
+
+# Existing instance local vars
+locals {
+  existing_rabbitmq_guid   = var.existing_rabbitmq_instance_crn != null ? module.rabbitmq_instance_crn_parser[0].service_instance : null
+  existing_rabbitmq_region = var.existing_rabbitmq_instance_crn != null ? module.rabbitmq_instance_crn_parser[0].region : null
+}
+
+# Do a data lookup on the resource GUID to get more info that is needed for the 'ibm_database' data lookup below
+data "ibm_resource_instance" "existing_instance_resource" {
+  count      = var.existing_rabbitmq_instance_crn != null ? 1 : 0
+  identifier = local.existing_rabbitmq_guid
+}
+
+# Lookup details of existing instance
+data "ibm_database" "existing_db_instance" {
+  count             = var.existing_rabbitmq_instance_crn != null ? 1 : 0
+  name              = data.ibm_resource_instance.existing_instance_resource[0].name
+  resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
+  location          = var.region
+  service           = "messages-for-rabbitmq"
+}
+
+# Lookup existing instance connection details
+data "ibm_database_connection" "existing_connection" {
+  count         = var.existing_rabbitmq_instance_crn != null ? 1 : 0
+  endpoint_type = "private"
+  deployment_id = data.ibm_database.existing_db_instance[0].id
+  user_id       = data.ibm_database.existing_db_instance[0].adminuser
+  user_type     = "database"
+}
+
 # Create new instance
 module "rabbitmq" {
+  count                             = var.existing_rabbitmq_instance_crn != null ? 0 : 1
   source                            = "../../modules/fscloud"
   depends_on                        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id                 = module.resource_group.resource_group_id
-  instance_name                     = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
+  name                              = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
   region                            = var.region
   rabbitmq_version                  = var.rabbitmq_version
   skip_iam_authorization_policy     = var.skip_rabbitmq_kms_auth_policy
@@ -267,10 +300,33 @@ module "rabbitmq" {
   configuration                     = var.configuration
   service_credential_names          = var.service_credential_names
   backup_crn                        = var.backup_crn
+  cbr_rules                         = var.cbr_rules
 }
 
 locals {
+  rabbitmq_guid     = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].guid : module.rabbitmq[0].guid
+  rabbitmq_id       = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].id : module.rabbitmq[0].id
+  rabbitmq_version  = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].version : module.rabbitmq[0].version
+  rabbitmq_crn      = var.existing_rabbitmq_instance_crn != null ? var.existing_rabbitmq_instance_crn : module.rabbitmq[0].crn
+  rabbitmq_hostname = var.existing_rabbitmq_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.rabbitmq[0].hostname
+  rabbitmq_port     = var.existing_rabbitmq_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.rabbitmq[0].port
+}
+
+#######################################################################################################################
+# Secrets management
+#######################################################################################################################
+
+locals {
+  ## Variable validation (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
   create_sm_auth_policy = var.skip_rabbitmq_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
+}
+
+# Parse the Secrets Manager CRN
+module "sm_instance_crn_parser" {
+  count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.1.0"
+  crn     = var.existing_secrets_manager_instance_crn
 }
 
 # create a service authorization between Secrets Manager and the target service (Databases for RabbitMQ)
@@ -279,7 +335,7 @@ resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
   source_service_name         = "secrets-manager"
   source_resource_instance_id = local.existing_secrets_manager_instance_guid
   target_service_name         = "messages-for-rabbitmq"
-  target_resource_instance_id = module.rabbitmq.guid
+  target_resource_instance_id = local.rabbitmq_guid
   roles                       = ["Key Manager"]
   description                 = "Allow Secrets Manager with instance id ${local.existing_secrets_manager_instance_guid} to manage key for the messages-for-rabbitmq instance"
 }
@@ -307,28 +363,39 @@ locals {
           service_credentials_ttl                     = secret.service_credentials_ttl
           service_credential_secret_description       = secret.service_credential_secret_description
           service_credentials_source_service_role_crn = secret.service_credentials_source_service_role_crn
-          service_credentials_source_service_crn      = module.rabbitmq.crn
+          service_credentials_source_service_crn      = module.rabbitmq[0].crn
           secret_type                                 = "service_credentials" #checkov:skip=CKV_SECRET_6
         }
       ]
     }
   ]
 
-  existing_secrets_manager_instance_crn_split = var.existing_secrets_manager_instance_crn != null ? split(":", var.existing_secrets_manager_instance_crn) : null
-  existing_secrets_manager_instance_guid      = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 3) : null
-  existing_secrets_manager_instance_region    = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 5) : null
+  # Build the structure of the arbitrary credential type secret for admin password
+  admin_pass_secret = [{
+    secret_group_name     = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_group != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_group}" : var.admin_pass_secrets_manager_secret_group
+    existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
+    secrets = [{
+      secret_name             = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_name != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_name}" : var.admin_pass_secrets_manager_secret_name
+      secret_type             = "arbitrary"
+      secret_payload_password = local.admin_pass
+      }
+    ]
+  }]
 
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
+  # Concatinate into 1 secrets object
+  secrets = concat(local.service_credential_secrets, local.admin_pass_secret)
+  # Parse Secrets Manager details from the CRN
+  existing_secrets_manager_instance_guid   = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].service_instance : null
+  existing_secrets_manager_instance_region = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].region : null
 }
 
 module "secrets_manager_service_credentials" {
   count                       = length(local.service_credential_secrets) > 0 ? 1 : 0
   depends_on                  = [time_sleep.wait_for_rabbitmq_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.24.3"
+  version                     = "2.1.1"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
-  secrets                     = local.service_credential_secrets
+  secrets                     = local.secrets
 }

@@ -7,7 +7,7 @@ variable "resource_group_id" {
   description = "The resource group ID where the RabbitMQ instance will be created."
 }
 
-variable "instance_name" {
+variable "name" {
   type        = string
   description = "The name of the RabbitMQ instance"
 }
