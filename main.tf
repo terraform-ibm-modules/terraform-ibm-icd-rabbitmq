@@ -165,14 +165,14 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 ########################################################################################################################
 
 resource "ibm_database" "rabbitmq_database" {
-  depends_on                = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
-  name                      = var.name
-  plan                      = var.plan
-  location                  = var.region
-  service                   = "messages-for-rabbitmq"
-  version                   = var.rabbitmq_version
-  resource_group_id         = var.resource_group_id
-  service_endpoints         = var.service_endpoints
+  depends_on        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
+  name              = var.name
+  plan              = var.plan
+  location          = var.region
+  service           = "messages-for-rabbitmq"
+  version           = var.rabbitmq_version
+  resource_group_id = var.resource_group_id
+  service_endpoints = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273
   configuration             = var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null
   tags                      = var.tags
