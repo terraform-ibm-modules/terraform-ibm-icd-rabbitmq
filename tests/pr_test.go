@@ -119,6 +119,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "provider_visibility", Value: "public", DataType: "string"},
 	}
 	err = options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
