@@ -331,6 +331,9 @@
             },
             {
               "key": "existing_rabbitmq_instance_crn"
+            },
+            {
+              "key": "configuration"
             }
           ]
         }
