@@ -191,16 +191,12 @@
               "required": true,
               "options": [
                 {
-                  "displayname": "3.9",
-                  "value": "3.9"
-                },
-                {
-                  "displayname": "3.12",
-                  "value": "3.12"
-                },
-                {
                   "displayname": "3.13",
                   "value": "3.13"
+                },
+                {
+                  "displayname": "4.0",
+                  "value": "4.0"
                 }
               ]
             },
