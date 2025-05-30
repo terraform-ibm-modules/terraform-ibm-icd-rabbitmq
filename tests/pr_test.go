@@ -25,8 +25,10 @@ import (
 )
 
 const standardSolutionTerraformDir = "solutions/standard"
+const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
-const latestVersion = "3.13"
+const earliestVersion = "3.13"
+const latestVersion = "4.0"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-rabbitmq"
@@ -112,7 +114,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
 		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
-		{Name: "rabbitmq_version", Value: "3.13", DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
@@ -164,7 +166,7 @@ func TestPlanValidation(t *testing.T) {
 	options.TerraformOptions.Vars = map[string]any{
 		"prefix":              options.Prefix,
 		"region":              "us-south",
-		"rabbitmq_version":    "3.13",
+		"rabbitmq_version":    earliestVersion,
 		"provider_visibility": "public",
 		"resource_group_name": options.Prefix,
 	}
