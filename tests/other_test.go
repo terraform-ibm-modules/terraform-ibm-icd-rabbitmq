@@ -12,7 +12,7 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
 
-func TestRunCompleteUpgradeExample(t *testing.T) {
+func TestRunCompleteExample(t *testing.T) {
 	t.Parallel()
 
 	// Generate a 15 char long random string for the admin_pass
@@ -44,16 +44,14 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 		CloudInfoService: sharedInfoSvc,
 	})
 
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
 
-		outputs := options.LastTestTerraformOutputs
-		expectedOutputs := []string{"port", "hostname"}
-		_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
-		assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
-	}
+	outputs := options.LastTestTerraformOutputs
+	expectedOutputs := []string{"port", "hostname"}
+	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
+	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
 }
 
 func testPlanICDVersions(t *testing.T, version string) {
