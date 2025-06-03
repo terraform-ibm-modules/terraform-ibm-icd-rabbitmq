@@ -46,10 +46,10 @@
       ],
       "flavors": [
         {
-          "label": "Standard",
-          "name": "standard",
+          "label": "Fully Configurable",
+          "name": "fully-configurable",
           "install_type": "fullstack",
-          "working_directory": "solutions/standard",
+          "working_directory": "solutions/fully-configurable",
           "compliance": {
             "authority": "scc-v3",
             "profiles": [
@@ -84,7 +84,7 @@
             "features": [
               {
                 "title": " Creates an instance of Databases for RabbitMQ",
-                "description": "This architecture creates an instance of IBM Cloud Messages for RabbitMQ with KMS encryption. It accepts or creates a resource group, and provides autoscaling rules."
+                "description": "This architecture creates an instance of IBM Cloud Messages for RabbitMQ with optional KMS encryption. It accepts a resource group, and provides autoscaling rules."
               }
             ],
             "diagrams": [
@@ -94,7 +94,7 @@
                   "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/main/reference-architecture/deployable-architecture-rabbitmq.svg",
                   "type": "image/svg+xml"
                 },
-                "description": "This architecture supports creating and configuring an instance of Messages for RabbitMQ instance with KMS encryption."
+                "description": "This architecture supports creating and configuring an instance of Messages for RabbitMQ instance with optional KMS encryption."
               }
             ]
           },
@@ -120,13 +120,20 @@
               ]
             },
             {
-              "key": "use_existing_resource_group"
+              "key": "existing_resource_group_name",
+              "required": true,
+              "custom_config": {
+                  "type": "resource_group",
+                  "grouping": "deployment",
+                  "original_grouping": "deployment",
+                  "config_constraints": {
+                      "identifier": "rg_name"
+                  }
+              }
             },
             {
-              "key": "resource_group_name"
-            },
-            {
-              "key": "prefix"
+              "key": "prefix",
+              "required": true
             },
             {
               "key": "name"
@@ -201,6 +208,9 @@
               ]
             },
             {
+              "key": "rabbitmq_service_endpoints"
+            },
+            {
               "key": "members"
             },
             {
@@ -251,8 +261,7 @@
               "key": "ibmcloud_kms_api_key"
             },
             {
-              "key": "existing_kms_instance_crn",
-              "required": true
+              "key": "existing_kms_instance_crn"
             },
             {
               "key": "existing_kms_key_crn"
