@@ -24,9 +24,9 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testschematic"
 )
 
-const standardSolutionTerraformDir = "solutions/standard"
+const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
+const securityEnforcedTerraformDir = "solutions/security-enforced"
 const completeExampleTerraformDir = "examples/complete"
-const fscloudExampleTerraformDir = "examples/fscloud"
 const earliestVersion = "3.13"
 const latestVersion = "4.0"
 
@@ -60,21 +60,19 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRunStandardSolutionSchematics(t *testing.T) {
+func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing: t,
 		TarIncludePatterns: []string{
 			"*.tf",
-			fmt.Sprintf("%s/*.tf", standardSolutionTerraformDir),
-			fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
-			fmt.Sprintf("%s/*.tf", "modules/fscloud"),
+			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
 			fmt.Sprintf("%s/*.sh", "scripts"),
 		},
-		TemplateFolder:         standardSolutionTerraformDir,
+		TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
-		Prefix:                 "rabbitmq-st-da",
+		Prefix:                 "rbtmq-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
 		WaitJobCompleteMinutes: 60,
@@ -109,40 +107,40 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
-		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 	}
 	err = options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunStandardUpgradeSolution(t *testing.T) {
+func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:            t,
-		TerraformDir:       standardSolutionTerraformDir,
+		TerraformDir:       fullyConfigurableSolutionTerraformDir,
 		BestRegionYAMLPath: regionSelectionPath,
-		Prefix:             "rabbitmq-st-da-upg",
+		Prefix:             "rmq-da-upg",
 		ResourceGroup:      resourceGroup,
 	})
 
 	options.TerraformVars = map[string]any{
-		"access_tags":               permanentResources["accessTags"],
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
-		"kms_endpoint_type":         "public",
-		"provider_visibility":       "public",
-		"resource_group_name":       options.Prefix,
+		"prefix":                       options.Prefix,
+		"access_tags":                  permanentResources["accessTags"],
+		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
+		"kms_endpoint_type":            "public",
+		"provider_visibility":          "public",
+		"existing_resource_group_name": resourceGroup,
 	}
 
 	output, err := options.RunTestUpgrade()
@@ -152,11 +150,74 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 	}
 }
 
+func TestRunSecurityEnforcedSchematics(t *testing.T) {
+	t.Parallel()
+
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing: t,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
+			fmt.Sprintf("%s/*.tf", securityEnforcedTerraformDir),
+			fmt.Sprintf("%s/*.sh", "scripts"),
+		},
+		TemplateFolder:         securityEnforcedTerraformDir,
+		BestRegionYAMLPath:     regionSelectionPath,
+		Prefix:                 "rmq-sec",
+		ResourceGroup:          resourceGroup,
+		DeleteWorkspaceOnFail:  false,
+		WaitJobCompleteMinutes: 60,
+	})
+
+	serviceCredentialSecrets := []map[string]any{
+		{
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
+			"service_credentials": []map[string]string{
+				{
+					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer",
+				},
+				{
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Editor",
+				},
+			},
+		},
+	}
+
+	serviceCredentialNames := map[string]string{
+		"admin": "Administrator",
+		"user1": "Viewer",
+		"user2": "Editor",
+	}
+
+	serviceCredentialNamesJSON, err := json.Marshal(serviceCredentialNames)
+	if err != nil {
+		log.Fatalf("Error converting to JSON: %s", err)
+	}
+
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
+	}
+	err = options.RunSchematicTest()
+	assert.Nil(t, err, "This should not have errored")
+}
+
 func TestPlanValidation(t *testing.T) {
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
-		TerraformDir:  standardSolutionTerraformDir,
-		Prefix:        "validate-plan",
+		TerraformDir:  fullyConfigurableSolutionTerraformDir,
+		Prefix:        "val-plan",
 		ResourceGroup: resourceGroup,
 		Region:        "us-south", // skip VPC region picker
 	})
@@ -164,28 +225,29 @@ func TestPlanValidation(t *testing.T) {
 	options.TerraformOptions.NoColor = true
 	options.TerraformOptions.Logger = logger.Discard
 	options.TerraformOptions.Vars = map[string]any{
-		"prefix":              options.Prefix,
-		"region":              "us-south",
-		"rabbitmq_version":    earliestVersion,
-		"provider_visibility": "public",
-		"resource_group_name": options.Prefix,
+		"prefix":                       options.Prefix,
+		"region":                       "us-south",
+		"rabbitmq_version":             earliestVersion,
+		"provider_visibility":          "public",
+		"existing_resource_group_name": resourceGroup,
 	}
 
 	// Test the DA when using an existing KMS instance
-	var standardSolutionWithExistingKms = map[string]any{
-		"access_tags":               permanentResources["accessTags"],
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+	var fullyConfigurableSolutionWithExistingKms = map[string]any{
+		"access_tags":                  permanentResources["accessTags"],
+		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
+		"use_ibm_owned_encryption_key": false,
 	}
 
 	// Test the DA when using IBM owned encryption key
-	var standardSolutionWithUseIbmOwnedEncKey = map[string]any{
+	var fullyConfigurableWithUseIbmOwnedEncKey = map[string]any{
 		"use_ibm_owned_encryption_key": true,
 	}
 
 	// Create a map of the variables
 	tfVarsMap := map[string]map[string]any{
-		"standardSolutionWithExistingKms":       standardSolutionWithExistingKms,
-		"standardSolutionWithUseIbmOwnedEncKey": standardSolutionWithUseIbmOwnedEncKey,
+		"fullyConfigurableSolutionWithExistingKms": fullyConfigurableSolutionWithExistingKms,
+		"fullyConfigurableWithUseIbmOwnedEncKey":   fullyConfigurableWithUseIbmOwnedEncKey, //pragma: allowlist secret
 	}
 
 	_, initErr := terraform.InitE(t, options.TerraformOptions)
@@ -233,6 +295,7 @@ func TestRunExistingInstance(t *testing.T) {
 		Vars: map[string]any{
 			"prefix":            prefix,
 			"region":            region,
+			"resource_group":    resourceGroup,
 			"rabbitmq_version":  latestVersion,
 			"service_endpoints": "public-and-private",
 		},
@@ -251,14 +314,12 @@ func TestRunExistingInstance(t *testing.T) {
 			Testing: t,
 			TarIncludePatterns: []string{
 				"*.tf",
-				fmt.Sprintf("%s/*.tf", standardSolutionTerraformDir),
-				fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
-				fmt.Sprintf("%s/*.tf", "modules/fscloud"),
+				fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
 				fmt.Sprintf("%s/*.sh", "scripts"),
 			},
-			TemplateFolder:         standardSolutionTerraformDir,
+			TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 			BestRegionYAMLPath:     regionSelectionPath,
-			Prefix:                 "rabbitmq-da",
+			Prefix:                 "rmq-da-ex",
 			ResourceGroup:          resourceGroup,
 			DeleteWorkspaceOnFail:  false,
 			WaitJobCompleteMinutes: 60,
@@ -266,10 +327,10 @@ func TestRunExistingInstance(t *testing.T) {
 
 		options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 			{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+			{Name: "prefix", Value: options.Prefix, DataType: "string"},
 			{Name: "existing_rabbitmq_instance_crn", Value: terraform.Output(t, existingTerraformOptions, "rabbitmq_crn"), DataType: "string"},
-			{Name: "resource_group_name", Value: fmt.Sprintf("%s-resource-group", prefix), DataType: "string"},
+			{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 			{Name: "region", Value: region, DataType: "string"},
-			{Name: "use_existing_resource_group", Value: true, DataType: "bool"},
 			{Name: "provider_visibility", Value: "public", DataType: "string"},
 		}
 		err := options.RunSchematicTest()
