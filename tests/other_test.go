@@ -27,7 +27,7 @@ func TestRunCompleteExample(t *testing.T) {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       completeExampleTerraformDir,
-		Prefix:             "rabbitmq-upg",
+		Prefix:             "rmq-upg",
 		BestRegionYAMLPath: regionSelectionPath,
 		ResourceGroup:      resourceGroup,
 		TerraformVars: map[string]interface{}{
@@ -86,7 +86,7 @@ func TestRunRestoredDBExample(t *testing.T) {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:       t,
 		TerraformDir:  "examples/backup-restore",
-		Prefix:        "rabbitmq-restored",
+		Prefix:        "rmq-restored",
 		ResourceGroup: resourceGroup,
 		Region:        fmt.Sprint(permanentResources["rabbitmqRegion"]),
 		TerraformVars: map[string]interface{}{
