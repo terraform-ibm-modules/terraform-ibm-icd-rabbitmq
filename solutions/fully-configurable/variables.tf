@@ -16,16 +16,28 @@ variable "existing_resource_group_name" {
 
 variable "prefix" {
   type        = string
-  description = "The prefix to add to all resources that this solution creates. Prefix must begin with a lowercase letter, contain only lowercase letters, numbers, and - characters. Prefixes must end with a lowercase letter or number and be 16 or fewer characters. It also cannot have a `--`. To not use any prefix value, you can set this value to `null` or an empty string."
   nullable    = true
+  description = "The prefix to be added to all resources created by this solution. To skip using a prefix, set this value to null or an empty string. The prefix must begin with a lowercase letter and may contain only lowercase letters, digits, and hyphens '-'. It should not exceed 16 characters, must not end with a hyphen('-'), and can not contain consecutive hyphens ('--'). Example: prod-0205-cos. [Learn more](https://terraform-ibm-modules.github.io/documentation/#/prefix.md)."
+
   validation {
-    condition = (var.prefix == null ? true :
+    # - null and empty string is allowed
+    # - Must not contain consecutive hyphens (--): length(regexall("--", var.prefix)) == 0
+    # - Starts with a lowercase letter: [a-z]
+    # - Contains only lowercase letters (a–z), digits (0–9), and hyphens (-)
+    # - Must not end with a hyphen (-): [a-z0-9]
+    condition = (var.prefix == null || var.prefix == "" ? true :
       alltrue([
-        can(regex("^[a-z]{0,1}[-a-z0-9]{0,14}[a-z0-9]{0,1}$", var.prefix)),
-        length(regexall("^.*--.*", var.prefix)) == 0
+        can(regex("^[a-z][-a-z0-9]*[a-z0-9]$", var.prefix)),
+        length(regexall("--", var.prefix)) == 0
       ])
     )
-    error_message = "Prefix must begin with a lowercase letter, contain only lowercase letters, numbers, and - characters. Prefixes must end with a lowercase letter or number and be 16 or fewer characters."
+    error_message = "Prefix must begin with a lowercase letter and may contain only lowercase letters, digits, and hyphens '-'. It must not end with a hyphen('-'), and cannot contain consecutive hyphens ('--')."
+  }
+
+  validation {
+    # must not exceed 16 characters in length
+    condition     = length(var.prefix) <= 16
+    error_message = "Prefix must not exceed 16 characters."
   }
 }
 
@@ -58,20 +70,21 @@ variable "existing_rabbitmq_instance_crn" {
   description = "The CRN of an existing Messages for RabbitMQ instance. If no value is specified, a new instance is created."
 }
 
-variable "rabbitmq_service_endpoints" {
+##############################################################################
+# ICD hosting model properties
+##############################################################################
+
+variable "service_endpoints" {
   type        = string
   description = "Specify whether you want to enable the public, private, or both service endpoints. Supported values are 'public', 'private', or 'public-and-private'."
   default     = "private"
 
   validation {
-    condition     = can(regex("public|public-and-private|private", var.rabbitmq_service_endpoints))
-    error_message = "Valid values for rabbitmq_service_endpoints are 'public', 'public-and-private', and 'private'"
+    condition     = can(regex("public|public-and-private|private", var.service_endpoints))
+    error_message = "Valid values for service_endpoints are 'public', 'public-and-private', and 'private'"
   }
 }
 
-##############################################################################
-# ICD hosting model properties
-##############################################################################
 
 variable "members" {
   type        = number
@@ -144,33 +157,24 @@ variable "access_tags" {
 # Encryption
 ##############################################################
 
-variable "use_ibm_owned_encryption_key" {
+variable "kms_encryption_enabled" {
   type        = bool
-  description = "IBM Cloud Databases will secure your deployment's data at rest automatically with an encryption key that IBM hold. Alternatively, you may select your own Key Management System instance and encryption key (Key Protect or Hyper Protect Crypto Services) by setting this to false. If setting to false, a value must be passed for `existing_kms_instance_crn` to create a new key, or `existing_kms_key_crn` and/or `existing_backup_kms_key_crn` to use an existing key."
+  description = "Set to true to enable KMS encryption using customer-managed keys. When enabled, you must provide a value for at least one of the following: existing_kms_instance_crn, existing_kms_key_crn, or existing_backup_kms_key_crn. If set to false, IBM-owned encryption is used (i.e., encryption keys managed and held by IBM)."
   default     = false
 
-  # this validation ensures IBM-owned key is not used when KMS details are provided
   validation {
-    condition = (
+    condition = (!var.kms_encryption_enabled ||
       var.existing_rabbitmq_instance_crn != null ||
-      !(var.use_ibm_owned_encryption_key && (
-        var.existing_kms_instance_crn != null ||
-        var.existing_kms_key_crn != null ||
-        var.existing_backup_kms_key_crn != null
-      ))
+      var.existing_kms_instance_crn != null ||
+      var.existing_kms_key_crn != null ||
+      var.existing_backup_kms_key_crn != null
     )
-    error_message = "When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false."
+    error_message = "When 'kms_encryption_enabled' is true, you must provide either 'existing_backup_kms_key_crn', 'existing_kms_instance_crn' (to create a new key) or 'existing_kms_key_crn' (to use an existing key)."
   }
 
-  # this validation ensures key info is provided when IBM-owned key is disabled and no RabbitMQ instance is given
   validation {
-    condition = !(
-      var.existing_rabbitmq_instance_crn == null &&
-      var.use_ibm_owned_encryption_key == false &&
-      var.existing_kms_instance_crn == null &&
-      var.existing_kms_key_crn == null
-    )
-    error_message = "When 'use_ibm_owned_encryption_key' is false, you must provide either 'existing_kms_instance_crn' (to create a new key) or 'existing_kms_key_crn' (to use an existing key)."
+    condition     = (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null && var.existing_backup_kms_key_crn == null) || var.kms_encryption_enabled
+    error_message = "When either 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn' is set then 'kms_encryption_enabled' must be set to true."
   }
 }
 
@@ -348,7 +352,7 @@ variable "service_credential_secrets" {
   }
 }
 
-variable "skip_rabbitmq_sm_auth_policy" {
+variable "skip_rabbitmq_secrets_manager_auth_policy" {
   type        = bool
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for RabbitMQ. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the RabbitMQ instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
   default     = false

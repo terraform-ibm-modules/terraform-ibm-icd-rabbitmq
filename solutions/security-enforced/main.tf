@@ -4,10 +4,11 @@ module "icd_rabbitmq" {
   ibmcloud_api_key                                     = var.ibmcloud_api_key
   existing_resource_group_name                         = var.existing_resource_group_name
   name                                                 = var.name
+  provider_visibility                                  = "private"
   region                                               = var.region
   rabbitmq_version                                     = var.rabbitmq_version
   existing_rabbitmq_instance_crn                       = var.existing_rabbitmq_instance_crn
-  rabbitmq_service_endpoints                           = "private"
+  service_endpoints                                    = "private"
   members                                              = var.members
   member_memory_mb                                     = var.member_memory_mb
   member_cpu_count                                     = var.member_cpu_count
@@ -18,7 +19,7 @@ module "icd_rabbitmq" {
   users                                                = var.users
   tags                                                 = var.tags
   access_tags                                          = var.access_tags
-  use_ibm_owned_encryption_key                         = false
+  kms_encryption_enabled                               = true
   existing_kms_instance_crn                            = var.existing_kms_instance_crn
   existing_kms_key_crn                                 = var.existing_kms_key_crn
   kms_endpoint_type                                    = "private"
@@ -29,12 +30,11 @@ module "icd_rabbitmq" {
   existing_backup_kms_key_crn                          = var.existing_backup_kms_key_crn
   use_default_backup_encryption_key                    = "false"
   backup_crn                                           = var.backup_crn
-  provider_visibility                                  = "private"
   auto_scaling                                         = var.auto_scaling
   existing_secrets_manager_instance_crn                = var.existing_secrets_manager_instance_crn
   existing_secrets_manager_endpoint_type               = "private"
   service_credential_secrets                           = var.service_credential_secrets
-  skip_rabbitmq_sm_auth_policy                         = var.skip_rabbitmq_sm_auth_policy
+  skip_rabbitmq_secrets_manager_auth_policy            = var.skip_rabbitmq_secrets_manager_auth_policy
   admin_pass_secrets_manager_secret_group              = var.admin_pass_secrets_manager_secret_group
   use_existing_admin_pass_secrets_manager_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
   admin_pass_secrets_manager_secret_name               = var.admin_pass_secrets_manager_secret_name

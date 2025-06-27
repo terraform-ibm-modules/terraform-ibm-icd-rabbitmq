@@ -29,26 +29,27 @@
       "support_details": "This product is in the community registry, as such support is handled through the originated repo. If you experience issues please open an issue in the repository [https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/issues](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/issues). Please note this product is not supported via the IBM Cloud Support Center.",
       "features": [
         {
-          "title": "Creates an instance of Databases for RabbitMQ",
-          "description": "Creates and configures an IBM Cloud Databases for RabbitMQ instance."
-        },
-        {
-          "title": "Supports KMS encryption",
+          "title": "KMS encryption",
           "description": "Provides KMS encryption for the data that you store in the database."
         },
         {
-          "title": "Supports autoscaling",
+          "title": "Autoscaling",
           "description": "Provides the autoscaling to allow the database to increase resources in response to usage."
         },
         {
-          "title": "Supports backup restoration",
+          "title": "Backup restoration",
           "description": "Provides database restoration using a backup created by a deployment with the same service ID."
+        },
+        {
+          "title": "Access tags",
+          "description": "Attaches access tags to the RabbitMQ instance."
         }
       ],
       "flavors": [
         {
           "label": "Fully Configurable",
           "name": "fully-configurable",
+          "index": 1,
           "install_type": "fullstack",
           "working_directory": "solutions/fully-configurable",
           "compliance": {
@@ -105,6 +106,7 @@
             },
             {
               "key": "provider_visibility",
+              "hidden": true,
               "options": [
                 {
                   "displayname": "private",
@@ -122,6 +124,7 @@
             },
             {
               "key": "existing_resource_group_name",
+              "display_name": "resource_group",
               "required": true,
               "custom_config": {
                   "type": "resource_group",
@@ -135,9 +138,6 @@
             {
               "key": "prefix",
               "required": true
-            },
-            {
-              "key": "name"
             },
             {
               "key": "region",
@@ -209,31 +209,7 @@
               ]
             },
             {
-              "key": "rabbitmq_service_endpoints"
-            },
-            {
-              "key": "members"
-            },
-            {
-              "key": "member_memory_mb"
-            },
-            {
-              "key": "member_cpu_count"
-            },
-            {
-              "key": "member_disk_mb"
-            },
-            {
-              "key": "member_host_flavor"
-            },
-            {
-              "key": "service_credential_names"
-            },
-            {
-              "key": "admin_pass"
-            },
-            {
-              "key": "users"
+              "key": "name"
             },
             {
               "key": "tags",
@@ -256,10 +232,83 @@
               }
             },
             {
-              "key": "use_ibm_owned_encryption_key"
+              "key": "members"
+            },
+            {
+              "key": "member_memory_mb"
+            },
+            {
+              "key": "member_cpu_count"
+            },
+            {
+              "key": "member_disk_mb"
+            },
+            {
+              "key": "member_host_flavor"
+            },
+            {
+              "key": "auto_scaling"
+            },
+            {
+              "key": "service_endpoints"
+            },
+            {
+              "key": "service_credential_names"
+            },
+            {
+              "key": "service_credential_secrets",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
+            },
+            {
+              "key": "admin_pass"
+            },
+            {
+              "key": "existing_secrets_manager_instance_crn"
+            },
+            {
+              "key": "existing_secrets_manager_endpoint_type",
+              "options": [
+                {
+                  "displayname": "public",
+                  "value": "public"
+                },
+                {
+                  "displayname": "private",
+                  "value": "private"
+                }
+              ]
+            },
+            {
+              "key": "skip_rabbitmq_secrets_manager_auth_policy"
+            },
+            {
+              "key": "admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "admin_pass_secrets_manager_secret_name"
+            },
+            {
+              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "users",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "ibmcloud_kms_api_key"
+            },
+            {
+              "key": "kms_encryption_enabled"
             },
             {
               "key": "existing_kms_instance_crn"
@@ -287,34 +336,6 @@
               "key": "key_name"
             },
             {
-              "key": "auto_scaling"
-            },
-            {
-              "key": "existing_secrets_manager_instance_crn"
-            },
-            {
-              "key": "existing_secrets_manager_endpoint_type",
-              "options": [
-                {
-                  "displayname": "public",
-                  "value": "public"
-                },
-                {
-                  "displayname": "private",
-                  "value": "private"
-                }
-              ]
-            },
-            {
-              "key": "service_credential_secrets"
-            },
-            {
-              "key": "skip_rabbitmq_sm_auth_policy"
-            },
-            {
-              "key": "skip_rabbitmq_kms_auth_policy"
-            },
-            {
               "key": "backup_crn"
             },
             {
@@ -324,13 +345,7 @@
               "key": "use_default_backup_encryption_key"
             },
             {
-              "key": "admin_pass_secrets_manager_secret_group"
-            },
-            {
-              "key": "admin_pass_secrets_manager_secret_name"
-            },
-            {
-              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+              "key": "skip_rabbitmq_kms_auth_policy"
             },
             {
               "key": "cbr_rules"
@@ -343,6 +358,7 @@
         {
           "label": "Security-Enforced",
           "name": "security-enforced",
+          "index": 2,
           "install_type": "fullstack",
           "working_directory": "solutions/security-enforced",
           "compliance": {
@@ -378,8 +394,8 @@
           "architecture": {
             "features": [
               {
-                "title": " Creates an instance of Databases for RabbitMQ",
-                "description": "This architecture creates an instance of IBM Cloud Messages for RabbitMQ with KMS encryption. It accepts a resource group, and provides autoscaling rules."
+                "title": " ",
+                "description": "Configured to use IBM secure by default standards that can't be changed."
               }
             ],
             "diagrams": [
@@ -412,9 +428,6 @@
             {
               "key": "prefix",
               "required": true
-            },
-            {
-              "key": "name"
             },
             {
               "key": "region",
@@ -486,28 +499,7 @@
               ]
             },
             {
-              "key": "members"
-            },
-            {
-              "key": "member_memory_mb"
-            },
-            {
-              "key": "member_cpu_count"
-            },
-            {
-              "key": "member_disk_mb"
-            },
-            {
-              "key": "member_host_flavor"
-            },
-            {
-              "key": "service_credential_names"
-            },
-            {
-              "key": "admin_pass"
-            },
-            {
-              "key": "users"
+              "key": "name"
             },
             {
               "key": "tags",
@@ -530,10 +522,68 @@
               }
             },
             {
+              "key": "members"
+            },
+            {
+              "key": "member_memory_mb"
+            },
+            {
+              "key": "member_cpu_count"
+            },
+            {
+              "key": "member_disk_mb"
+            },
+            {
+              "key": "member_host_flavor"
+            },
+            {
+              "key": "auto_scaling"
+            },
+            {
+              "key": "service_credential_names"
+            },
+            {
+              "key": "service_credential_secrets",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
+            },
+            {
+              "key": "admin_pass"
+            },
+            {
+              "key": "existing_secrets_manager_instance_crn"
+            },
+            {
+              "key": "skip_rabbitmq_secrets_manager_auth_policy"
+            },
+            {
+              "key": "admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "admin_pass_secrets_manager_secret_name"
+            },
+            {
+              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "users",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
+            },
+            {
               "key": "ibmcloud_kms_api_key"
             },
             {
-              "key": "existing_kms_instance_crn"
+              "key": "existing_kms_instance_crn",
+              "required": true
             },
             {
               "key": "existing_kms_key_crn"
@@ -545,34 +595,13 @@
               "key": "key_name"
             },
             {
-              "key": "auto_scaling"
-            },
-            {
-              "key": "existing_secrets_manager_instance_crn"
-            },
-            {
-              "key": "service_credential_secrets"
-            },
-            {
-              "key": "skip_rabbitmq_sm_auth_policy"
-            },
-            {
-              "key": "skip_rabbitmq_kms_auth_policy"
-            },
-            {
               "key": "backup_crn"
             },
             {
               "key": "existing_backup_kms_key_crn"
             },
             {
-              "key": "admin_pass_secrets_manager_secret_group"
-            },
-            {
-              "key": "admin_pass_secrets_manager_secret_name"
-            },
-            {
-              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+              "key": "skip_rabbitmq_kms_auth_policy"
             },
             {
               "key": "cbr_rules"
