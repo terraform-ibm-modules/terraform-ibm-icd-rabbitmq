@@ -17,7 +17,6 @@
         "infrastructure as code",
         "terraform",
         "solution",
-        "rabbitmq standard",
         "cache",
         "in memory"
       ],
@@ -30,24 +29,25 @@
       "features": [
         {
           "title": "KMS encryption",
-          "description": "Provides KMS encryption for the data that you store in the database."
+          "description": "Provides [KMS encryption](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-key-protect&interface=ui) for the data that you store in the database, enhancing data security."
+
         },
         {
           "title": "Autoscaling",
-          "description": "Provides the autoscaling to allow the database to increase resources in response to usage."
-        },
-        {
-          "title": "Backup restoration",
-          "description": "Provides database restoration using a backup created by a deployment with the same service ID."
+          "description": "Provides the [autoscaling](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-autoscaling&interface=ui) to allow the database to increase resources in response to usage."
         },
         {
           "title": "Access tags",
           "description": "Attaches access tags to the RabbitMQ instance."
+        },
+        {
+          "title": "Backup restoration",
+          "description": "Provides [database restoration](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-backups-for-rabbitmq&interface=ui) using a backup created by a deployment with the same service ID."
         }
       ],
       "flavors": [
         {
-          "label": "Fully Configurable",
+          "label": "Fully configurable",
           "name": "fully-configurable",
           "index": 1,
           "install_type": "fullstack",
@@ -71,22 +71,23 @@
             },
             {
               "role_crns": [
-                "crn:v1:bluemix:public:iam::::role:Administrator"
-              ],
-              "service_name": "all-account-management-services"
-            },
-            {
-              "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "messages-for-rabbitmq"
             },
             {
               "role_crns": [
-                "crn:v1:bluemix:public:iam::::serviceRole:Manager",
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
-              "service_name": "kms"
+              "service_name": "kms",
+              "notes": "[Optional] Editor access is required to create keys. It is only required when using Key Protect for encryption."
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "hs-crypto",
+              "notes": "[Optional] Editor access is required to create keys in HPCS. It is only required when using HPCS for encryption."
             }
           ],
           "architecture": {
@@ -143,13 +144,11 @@
               }
             },
             {
-              "key": "prefix",
-              "required": true
+              "key": "prefix"
             },
             {
               "key": "region",
               "required": true,
-              "default_value": "us-south",
               "options": [
                 {
                   "displayname": "Chennai (che01)",
@@ -219,7 +218,8 @@
               "key": "name"
             },
             {
-              "key": "tags",
+              "key": "resource_tags",
+              "type": "array",
               "custom_config": {
                 "grouping": "deployment",
                 "original_grouping": "deployment",
@@ -230,6 +230,7 @@
             },
             {
               "key": "access_tags",
+              "type": "array",
               "custom_config": {
                 "grouping": "deployment",
                 "original_grouping": "deployment",
@@ -257,7 +258,21 @@
               "key": "auto_scaling"
             },
             {
-              "key": "service_endpoints"
+              "key": "service_endpoints",
+              "options": [
+                {
+                  "displayname": "private",
+                  "value": "private"
+                },
+                {
+                  "displayname": "public",
+                  "value": "public"
+                },
+                {
+                  "displayname": "public-and-private",
+                  "value": "public-and-private"
+                }
+              ]
             },
             {
               "key": "service_credential_names"
@@ -365,7 +380,7 @@
           ]
         },
         {
-          "label": "Security-Enforced",
+          "label": "Security-enforced",
           "name": "security-enforced",
           "index": 2,
           "install_type": "fullstack",
@@ -389,22 +404,23 @@
             },
             {
               "role_crns": [
-                "crn:v1:bluemix:public:iam::::role:Administrator"
-              ],
-              "service_name": "all-account-management-services"
-            },
-            {
-              "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "messages-for-rabbitmq"
             },
             {
               "role_crns": [
-                "crn:v1:bluemix:public:iam::::serviceRole:Manager",
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
-              "service_name": "kms"
+              "service_name": "kms",
+              "notes": "[Optional] Editor access is required to create keys. It is only required when using Key Protect for encryption."
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "hs-crypto",
+              "notes": "[Optional] Editor access is required to create keys in HPCS. It is only required when using HPCS for encryption."
             }
           ],
           "architecture": {
@@ -442,13 +458,11 @@
               }
             },
             {
-              "key": "prefix",
-              "required": true
+              "key": "prefix"
             },
             {
               "key": "region",
               "required": true,
-              "default_value": "us-south",
               "options": [
                 {
                   "displayname": "Chennai (che01)",
@@ -518,7 +532,8 @@
               "key": "name"
             },
             {
-              "key": "tags",
+              "key": "resource_tags",
+              "type": "array",
               "custom_config": {
                 "grouping": "deployment",
                 "original_grouping": "deployment",
@@ -529,6 +544,7 @@
             },
             {
               "key": "access_tags",
+              "type": "array",
               "custom_config": {
                 "grouping": "deployment",
                 "original_grouping": "deployment",

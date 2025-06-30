@@ -17,7 +17,7 @@ module "icd_rabbitmq" {
   service_credential_names                             = var.service_credential_names
   admin_pass                                           = var.admin_pass
   users                                                = var.users
-  tags                                                 = var.tags
+  resource_tags                                        = var.resource_tags
   access_tags                                          = var.access_tags
   kms_encryption_enabled                               = true
   existing_kms_instance_crn                            = var.existing_kms_instance_crn

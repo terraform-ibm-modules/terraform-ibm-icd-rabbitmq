@@ -53,16 +53,16 @@ variable "region" {
   default     = "us-south"
 }
 
-variable "rabbitmq_version" {
-  description = "The version of the Databases for RabbitMQ instance. If no value is specified, the current preferred version of Databases for RabbitMQ is used."
-  type        = string
-  default     = null
-}
-
 variable "existing_rabbitmq_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Messages for RabbitMQ instance. If no value is specified, a new instance is created."
+}
+
+variable "rabbitmq_version" {
+  description = "The version of the Messages for RabbitMQ instance."
+  type        = string
+  default     = null
 }
 
 ##############################################################################
@@ -72,7 +72,7 @@ variable "existing_rabbitmq_instance_crn" {
 variable "members" {
   type        = number
   description = "The number of members that are allocated. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
-  default     = 3
+  default     = 2
 }
 
 variable "member_memory_mb" {
@@ -107,7 +107,7 @@ variable "service_credential_names" {
 
 variable "admin_pass" {
   type        = string
-  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
+  description = "The password for the database administrator. If no admin password is provided (i.e., it is null), one will be generated automatically. Additional users can be added using a user block."
   default     = null
   sensitive   = true
 }
@@ -124,15 +124,15 @@ variable "users" {
   description = "A list of users that you want to create on the database. Users block is supported by RabbitMQ version >= 6.0. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/blob/main/solutions/standard/DA-types.md#users)"
 }
 
-variable "tags" {
+variable "resource_tags" {
   type        = list(any)
-  description = "The list of tags to be added to the Databases for RabbitMQ instance."
+  description = "The list of resource tags to be added to the Messages for RabbitMQ instance."
   default     = []
 }
 
 variable "access_tags" {
   type        = list(string)
-  description = "A list of access tags to apply to the Databases for RabbitMQ instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
+  description = "A list of access tags to apply to the Messages for RabbitMQ instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
 }
 

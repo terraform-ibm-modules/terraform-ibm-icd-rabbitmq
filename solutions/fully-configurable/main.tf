@@ -5,7 +5,6 @@ locals {
   prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
 }
 
-
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
   version                      = "1.2.0"
@@ -49,7 +48,7 @@ module "kms" {
           standard_key             = false
           rotation_interval_month  = 3
           dual_auth_delete_enabled = false
-          force_delete             = true
+          force_delete             = true # Force delete must be set to true, or the terraform destroy will fail since the service does not de-register itself from the key until the reclamation period has expired.
         }
       ]
     }
@@ -291,7 +290,7 @@ module "rabbitmq" {
   use_same_kms_key_for_backups      = local.use_same_kms_key_for_backups
   use_default_backup_encryption_key = var.use_default_backup_encryption_key
   access_tags                       = var.access_tags
-  tags                              = var.tags
+  tags                              = var.resource_tags
   admin_pass                        = local.admin_pass
   users                             = var.users
   members                           = var.members
@@ -365,7 +364,7 @@ locals {
           service_credentials_ttl                     = secret.service_credentials_ttl
           service_credential_secret_description       = secret.service_credential_secret_description
           service_credentials_source_service_role_crn = secret.service_credentials_source_service_role_crn
-          service_credentials_source_service_crn      = module.rabbitmq[0].crn
+          service_credentials_source_service_crn      = local.rabbitmq_crn
           secret_type                                 = "service_credentials" #checkov:skip=CKV_SECRET_6
         }
       ]
@@ -377,7 +376,7 @@ locals {
     secret_group_name     = "${local.prefix}${var.admin_pass_secrets_manager_secret_group}"
     existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
     secrets = [{
-      secret_name             = "${var.prefix}${var.admin_pass_secrets_manager_secret_name}"
+      secret_name             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }

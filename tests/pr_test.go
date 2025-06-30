@@ -129,7 +129,7 @@ func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
 		Testing:            t,
 		TerraformDir:       fullyConfigurableSolutionTerraformDir,
 		BestRegionYAMLPath: regionSelectionPath,
-		Prefix:             "rmq-da-upg",
+		Prefix:             "rmq-upg",
 		ResourceGroup:      resourceGroup,
 	})
 
