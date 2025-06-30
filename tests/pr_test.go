@@ -110,6 +110,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
@@ -137,6 +138,7 @@ func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
 		"prefix":                       options.Prefix,
 		"access_tags":                  permanentResources["accessTags"],
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
+		"kms_encryption_enabled":       true,
 		"kms_endpoint_type":            "public",
 		"provider_visibility":          "public",
 		"existing_resource_group_name": resourceGroup,
@@ -233,14 +235,14 @@ func TestPlanValidation(t *testing.T) {
 
 	// Test the DA when using an existing KMS instance
 	var fullyConfigurableSolutionWithExistingKms = map[string]any{
-		"access_tags":                  permanentResources["accessTags"],
-		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
-		"use_ibm_owned_encryption_key": false,
+		"access_tags":               permanentResources["accessTags"],
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"kms_encryption_enabled":    true,
 	}
 
 	// Test the DA when using IBM owned encryption key
 	var fullyConfigurableWithUseIbmOwnedEncKey = map[string]any{
-		"use_ibm_owned_encryption_key": true,
+		"kms_encryption_enabled": false,
 	}
 
 	// Create a map of the variables
