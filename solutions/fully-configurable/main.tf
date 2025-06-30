@@ -1,29 +1,29 @@
 #######################################################################################################################
 # Resource Group
 #######################################################################################################################
+locals {
+  prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
+}
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
   version                      = "1.2.0"
-  resource_group_name          = var.use_existing_resource_group == false ? (var.prefix != null ? "${var.prefix}-${var.resource_group_name}" : var.resource_group_name) : null
-  existing_resource_group_name = var.use_existing_resource_group == true ? var.resource_group_name : null
+  existing_resource_group_name = var.existing_resource_group_name
 }
-
-#######################################################################################################################
-# KMS related variable validation
-# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-#
-# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
-#######################################################################################################################
 
 #######################################################################################################################
 # KMS encryption key
 #######################################################################################################################
 
 locals {
-  create_new_kms_key     = var.existing_rabbitmq_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? true : false # no need to create any KMS resources if passing an existing key, or using IBM owned keys
-  rabbitmq_key_name      = var.prefix != null ? "${var.prefix}-${var.key_name}" : var.key_name
-  rabbitmq_key_ring_name = var.prefix != null ? "${var.prefix}-${var.key_ring_name}" : var.key_ring_name
+  use_ibm_owned_encryption_key = !var.kms_encryption_enabled
+  create_new_kms_key = (
+    var.kms_encryption_enabled &&
+    var.existing_rabbitmq_instance_crn == null &&
+    var.existing_kms_key_crn == null
+  )
+  rabbitmq_key_name      = "${local.prefix}${var.key_name}"
+  rabbitmq_key_ring_name = "${local.prefix}${var.key_ring_name}"
 }
 
 module "kms" {
@@ -48,7 +48,7 @@ module "kms" {
           standard_key             = false
           rotation_interval_month  = 3
           dual_auth_delete_enabled = false
-          force_delete             = true
+          force_delete             = true # Force delete must be set to true, or the terraform destroy will fail since the service does not de-register itself from the key until the reclamation period has expired.
         }
       ]
     }
@@ -92,24 +92,23 @@ data "ibm_iam_account_settings" "iam_account_settings" {
 
 locals {
   account_id                                  = data.ibm_iam_account_settings.iam_account_settings.account_id
-  create_cross_account_kms_auth_policy        = var.existing_rabbitmq_instance_crn == null && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
-  create_cross_account_backup_kms_auth_policy = var.existing_rabbitmq_instance_crn == null && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key && var.existing_backup_kms_key_crn != null
+  create_cross_account_kms_auth_policy        = var.kms_encryption_enabled && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null
+  create_cross_account_backup_kms_auth_policy = var.kms_encryption_enabled && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && var.existing_backup_kms_key_crn != null
 
   # If KMS encryption enabled (and existing ES instance is not being passed), parse details from the existing key if being passed, otherwise get it from the key that the DA creates
-  kms_account_id    = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
-  kms_service       = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
-  kms_instance_guid = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
-  kms_key_crn       = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].crn
-  kms_key_id        = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].key_id
-  kms_region        = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
+  kms_account_id    = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
+  kms_service       = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
+  kms_instance_guid = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
+  kms_key_crn       = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].crn
+  kms_key_id        = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.rabbitmq_key_ring_name, local.rabbitmq_key_name)].key_id
+  kms_region        = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
 
   # If creating KMS cross account policy for backups, parse backup key details from passed in key CRN
   backup_kms_account_id    = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].account_id : local.kms_account_id
   backup_kms_service       = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].service_name : local.kms_service
   backup_kms_instance_guid = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].service_instance : local.kms_instance_guid
   backup_kms_key_id        = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].resource : local.kms_key_id
-
-  backup_kms_key_crn = var.existing_rabbitmq_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_backup_kms_key_crn
+  backup_kms_key_crn       = var.existing_rabbitmq_instance_crn != null || local.use_ibm_owned_encryption_key ? null : var.existing_backup_kms_key_crn
   # Always use same key for backups unless user explicially passed a value for 'existing_backup_kms_key_crn'
   use_same_kms_key_for_backups = var.existing_backup_kms_key_crn == null ? true : false
 }
@@ -227,7 +226,9 @@ locals {
   # if - replace first char with J
   # elseif _ replace first char with K
   # else use asis
-  admin_pass = var.admin_pass == null ? (startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result) : var.admin_pass
+  generated_admin_password = (length(random_password.admin_password) > 0 ? (startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result) : null)
+  # admin password to use
+  admin_pass = var.admin_pass == null ? local.generated_admin_password : var.admin_pass
 }
 
 #######################################################################################################################
@@ -275,20 +276,21 @@ data "ibm_database_connection" "existing_connection" {
 # Create new instance
 module "rabbitmq" {
   count                             = var.existing_rabbitmq_instance_crn != null ? 0 : 1
-  source                            = "../../modules/fscloud"
+  source                            = "../../"
   depends_on                        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id                 = module.resource_group.resource_group_id
-  name                              = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
+  name                              = "${local.prefix}${var.name}"
   region                            = var.region
   rabbitmq_version                  = var.rabbitmq_version
+  service_endpoints                 = var.service_endpoints
   skip_iam_authorization_policy     = var.skip_rabbitmq_kms_auth_policy
-  use_ibm_owned_encryption_key      = var.use_ibm_owned_encryption_key
+  use_ibm_owned_encryption_key      = local.use_ibm_owned_encryption_key
   kms_key_crn                       = local.kms_key_crn
   backup_encryption_key_crn         = local.backup_kms_key_crn
   use_same_kms_key_for_backups      = local.use_same_kms_key_for_backups
   use_default_backup_encryption_key = var.use_default_backup_encryption_key
   access_tags                       = var.access_tags
-  tags                              = var.tags
+  tags                              = var.resource_tags
   admin_pass                        = local.admin_pass
   users                             = var.users
   members                           = var.members
@@ -317,7 +319,7 @@ locals {
 
 locals {
   ## Variable validation (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-  create_sm_auth_policy = var.skip_rabbitmq_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
+  create_sm_auth_policy = var.skip_rabbitmq_secrets_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
 }
 
 # Parse the Secrets Manager CRN
@@ -362,7 +364,7 @@ locals {
           service_credentials_ttl                     = secret.service_credentials_ttl
           service_credential_secret_description       = secret.service_credential_secret_description
           service_credentials_source_service_role_crn = secret.service_credentials_source_service_role_crn
-          service_credentials_source_service_crn      = module.rabbitmq[0].crn
+          service_credentials_source_service_crn      = local.rabbitmq_crn
           secret_type                                 = "service_credentials" #checkov:skip=CKV_SECRET_6
         }
       ]
@@ -371,10 +373,10 @@ locals {
 
   # Build the structure of the arbitrary credential type secret for admin password
   admin_pass_secret = [{
-    secret_group_name     = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_group != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_group}" : var.admin_pass_secrets_manager_secret_group
+    secret_group_name     = "${local.prefix}${var.admin_pass_secrets_manager_secret_group}"
     existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
     secrets = [{
-      secret_name             = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_name != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_name}" : var.admin_pass_secrets_manager_secret_name
+      secret_name             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }
