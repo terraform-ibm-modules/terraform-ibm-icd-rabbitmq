@@ -72,7 +72,7 @@ variable "rabbitmq_version" {
 variable "members" {
   type        = number
   description = "The number of members that are allocated. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)."
-  default     = 2
+  default     = 3
 }
 
 variable "member_memory_mb" {

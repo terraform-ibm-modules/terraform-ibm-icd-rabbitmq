@@ -30,7 +30,6 @@
         {
           "title": "KMS encryption",
           "description": "Provides [KMS encryption](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-key-protect&interface=ui) for the data that you store in the database, enhancing data security."
-
         },
         {
           "title": "Autoscaling",
@@ -64,7 +63,7 @@
           "iam_permissions": [
             {
               "role_crns": [
-                  "crn:v1:bluemix:public:iam::::role:Viewer"
+                "crn:v1:bluemix:public:iam::::role:Viewer"
               ],
               "service_name": "Resource group only",
               "notes": "Viewer access is required in the resource group you want to provision in."
@@ -133,7 +132,6 @@
             {
               "key": "existing_resource_group_name",
               "display_name": "resource_group",
-              "required": true,
               "custom_config": {
                   "type": "resource_group",
                   "grouping": "deployment",
@@ -372,10 +370,10 @@
               "key": "skip_rabbitmq_kms_auth_policy"
             },
             {
-              "key": "cbr_rules"
+              "key": "existing_rabbitmq_instance_crn"
             },
             {
-              "key": "existing_rabbitmq_instance_crn"
+              "key": "cbr_rules"
             }
           ]
         },
@@ -397,7 +395,7 @@
           "iam_permissions": [
             {
               "role_crns": [
-                  "crn:v1:bluemix:public:iam::::role:Viewer"
+                "crn:v1:bluemix:public:iam::::role:Viewer"
               ],
               "service_name": "Resource group only",
               "notes": "Viewer access is required in the resource group you want to provision in."
@@ -447,7 +445,7 @@
             },
             {
               "key": "existing_resource_group_name",
-              "required": true,
+              "display_name": "resource_group",
               "custom_config": {
                   "type": "resource_group",
                   "grouping": "deployment",
@@ -636,10 +634,10 @@
               "key": "skip_rabbitmq_kms_auth_policy"
             },
             {
-              "key": "cbr_rules"
+              "key": "existing_rabbitmq_instance_crn"
             },
             {
-              "key": "existing_rabbitmq_instance_crn"
+              "key": "cbr_rules"
             }
           ]
         }
