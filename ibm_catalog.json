@@ -8,8 +8,9 @@
         "ibm_created",
         "target_terraform",
         "terraform",
+        "solution",
         "data_management",
-        "solution"
+        "converged_infra"
       ],
       "keywords": [
         "rabbitmq",
@@ -133,12 +134,12 @@
               "key": "existing_resource_group_name",
               "display_name": "resource_group",
               "custom_config": {
-                  "type": "resource_group",
-                  "grouping": "deployment",
-                  "original_grouping": "deployment",
-                  "config_constraints": {
-                      "identifier": "rg_name"
-                  }
+                "type": "resource_group",
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "identifier": "rg_name"
+                }
               }
             },
             {
@@ -447,12 +448,12 @@
               "key": "existing_resource_group_name",
               "display_name": "resource_group",
               "custom_config": {
-                  "type": "resource_group",
-                  "grouping": "deployment",
-                  "original_grouping": "deployment",
-                  "config_constraints": {
-                      "identifier": "rg_name"
-                  }
+                "type": "resource_group",
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "identifier": "rg_name"
+                }
               }
             },
             {
