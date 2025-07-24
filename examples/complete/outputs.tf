@@ -7,14 +7,19 @@ output "id" {
   value       = module.icd_rabbitmq.id
 }
 
+output "version" {
+  description = "RabbitMQ instance version"
+  value       = module.icd_rabbitmq.version
+}
+
 output "guid" {
   description = "RabbitMQ instance guid"
   value       = module.icd_rabbitmq.guid
 }
 
-output "version" {
-  description = "RabbitMQ instance version"
-  value       = module.icd_rabbitmq.version
+output "crn" {
+  description = "RabbitMQ instance crn"
+  value       = module.icd_rabbitmq.crn
 }
 
 output "service_credentials_json" {
