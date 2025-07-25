@@ -125,32 +125,36 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
+func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       fullyConfigurableSolutionTerraformDir,
-		BestRegionYAMLPath: regionSelectionPath,
-		Prefix:             "rmq-upg",
-		ResourceGroup:      resourceGroup,
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing:       t,
+		Region:        "us-south",
+		Prefix:        "rmq-upgv",
+		ResourceGroup: resourceGroup,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			securityEnforcedTerraformDir + "/*.tf",
+		},
+		TemplateFolder:             securityEnforcedTerraformDir,
+		Tags:                       []string{"rmq-upgv"},
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     120,
+		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]any{
-		"prefix":                       options.Prefix,
-		"access_tags":                  permanentResources["accessTags"],
-		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
-		"kms_encryption_enabled":       true,
-		"kms_endpoint_type":            "public",
-		"provider_visibility":          "public",
-		"existing_resource_group_name": resourceGroup,
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 	}
 
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-	}
+	err := options.RunSchematicUpgradeTest()
+	assert.Nil(t, err, "This should not have errored")
 }
 
 func TestRunSecurityEnforcedSchematics(t *testing.T) {
