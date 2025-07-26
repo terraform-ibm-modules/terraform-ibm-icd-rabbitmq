@@ -10,12 +10,6 @@ variable "region" {
   default     = "us-south"
 }
 
-variable "resource_tags" {
-  type        = list(string)
-  description = "Optional list of tags to be added to created resources"
-  default     = []
-}
-
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"
@@ -26,6 +20,18 @@ variable "resource_group" {
   type        = string
   description = "An existing resource group name to use for this example, if unset a new resource group will be created"
   default     = null
+}
+
+variable "resource_tags" {
+  type        = list(string)
+  description = "Optional list of tags to be added to created resources"
+  default     = []
+}
+
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the RabbitMQ instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
 }
 
 variable "kms_key_crn" {
@@ -50,16 +56,4 @@ variable "backup_encryption_key_crn" {
   description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
   default     = null
   # Validation happens in the root module
-}
-
-variable "tags" {
-  type        = list(any)
-  description = "Optional list of tags to be added to the RabbitMQ instance."
-  default     = []
-}
-
-variable "access_tags" {
-  type        = list(string)
-  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
-  default     = []
 }

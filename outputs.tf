@@ -7,24 +7,19 @@ output "id" {
   value       = ibm_database.rabbitmq_database.id
 }
 
-output "guid" {
-  description = "RabbitMQ instance guid"
-  value       = ibm_database.rabbitmq_database.guid
-}
-
 output "version" {
   description = "RabbitMQ instance version"
   value       = ibm_database.rabbitmq_database.version
 }
 
+output "guid" {
+  description = "RabbitMQ instance guid"
+  value       = ibm_database.rabbitmq_database.guid
+}
+
 output "crn" {
   description = "RabbitMQ instance crn"
   value       = ibm_database.rabbitmq_database.resource_crn
-}
-
-output "cbr_rule_ids" {
-  description = "CBR rule ids created to restrict RabbitMQ"
-  value       = module.cbr_rule[*].rule_id
 }
 
 output "service_credentials_json" {
@@ -37,6 +32,11 @@ output "service_credentials_object" {
   description = "Service credentials object"
   value       = local.service_credentials_object
   sensitive   = true
+}
+
+output "cbr_rule_ids" {
+  description = "CBR rule ids created to restrict RabbitMQ"
+  value       = module.cbr_rule[*].rule_id
 }
 
 output "adminuser" {

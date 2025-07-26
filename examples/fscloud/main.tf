@@ -41,7 +41,7 @@ module "cbr_zone" {
   source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-zone-module"
   version          = "1.32.4"
   name             = "${var.prefix}-VPC-network-zone"
-  zone_description = "CBR Network zone representing VPC"
+  zone_description = "CBR Network zone containing VPC"
   account_id       = data.ibm_iam_account_settings.iam_account_settings.account_id
   addresses = [{
     type  = "vpc", # to bind a specific vpc to the zone
@@ -61,10 +61,13 @@ module "rabbitmq_database" {
   resource_group_id         = module.resource_group.resource_group_id
   name                      = "${var.prefix}-rabbitmq"
   region                    = var.region
-  rabbitmq_version          = var.rabbitmq_version
+  tags                      = var.resource_tags
+  access_tags               = var.access_tags
+  deletion_protection       = false
   kms_key_crn               = var.kms_key_crn
   backup_encryption_key_crn = var.backup_encryption_key_crn
   backup_crn                = var.backup_crn
+  rabbitmq_version          = var.rabbitmq_version
   service_credential_names = {
     "rabbitmq_admin" : "Administrator",
     "rabbitmq_operator" : "Operator",
@@ -81,8 +84,6 @@ module "rabbitmq_database" {
     }
   }
   member_host_flavor = "b3c.4x16.encrypted"
-  tags               = var.tags
-  access_tags        = var.access_tags
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"

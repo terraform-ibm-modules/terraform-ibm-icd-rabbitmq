@@ -22,6 +22,11 @@ variable "resource_group" {
   default     = null
 }
 
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
+}
 variable "rabbitmq_version" {
   type        = string
   description = "Version of rabbitmq to deploy"
@@ -31,12 +36,6 @@ variable "rabbitmq_version" {
 variable "resource_tags" {
   type        = list(string)
   description = "Optional list of tags to be added to created resources"
-  default     = []
-}
-
-variable "access_tags" {
-  type        = list(string)
-  description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
   default     = []
 }
 
