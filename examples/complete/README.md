@@ -7,4 +7,4 @@ An end-to-end example that uses the IBM Cloud Terraform provider to create the f
 - An instance of Messages for RabbitMQ with BYOK encryption and autoscaling enabled.
 - Service credentials for the messaging instance.
 - A sample virtual private cloud (VPC).
-- CA context-based restriction (CBR) rule to only allow RabbitMQ to be accessible from within the VPC.
+- Create context-based restriction (CBR) rule to only allow RabbitMQ to be accessible from within the VPC.
