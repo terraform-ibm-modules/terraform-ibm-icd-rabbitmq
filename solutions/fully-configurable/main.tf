@@ -95,7 +95,7 @@ locals {
   create_cross_account_kms_auth_policy        = var.kms_encryption_enabled && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null
   create_cross_account_backup_kms_auth_policy = var.kms_encryption_enabled && !var.skip_rabbitmq_kms_auth_policy && var.ibmcloud_kms_api_key != null && var.existing_backup_kms_key_crn != null
 
-  # If KMS encryption enabled (and existing ES instance is not being passed), parse details from the existing key if being passed, otherwise get it from the key that the DA creates
+  # If KMS encryption enabled (and existing RabbitMQ instance is not being passed), parse details from the existing key if being passed, otherwise get it from the key that the DA creates
   kms_account_id    = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
   kms_service       = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
   kms_instance_guid = !var.kms_encryption_enabled || var.existing_rabbitmq_instance_crn != null ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
@@ -282,7 +282,6 @@ module "rabbitmq" {
   name                              = "${local.prefix}${var.name}"
   region                            = var.region
   rabbitmq_version                  = var.rabbitmq_version
-  service_endpoints                 = var.service_endpoints
   skip_iam_authorization_policy     = var.skip_rabbitmq_kms_auth_policy
   use_ibm_owned_encryption_key      = local.use_ibm_owned_encryption_key
   kms_key_crn                       = local.kms_key_crn
@@ -301,6 +300,10 @@ module "rabbitmq" {
   auto_scaling                      = var.auto_scaling
   service_credential_names          = var.service_credential_names
   backup_crn                        = var.backup_crn
+  service_endpoints                 = var.service_endpoints
+  deletion_protection               = var.deletion_protection
+  version_upgrade_skip_backup       = var.version_upgrade_skip_backup
+  timeouts_update                   = var.timeouts_update
   cbr_rules                         = var.cbr_rules
 }
 

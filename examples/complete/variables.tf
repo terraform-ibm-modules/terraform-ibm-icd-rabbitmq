@@ -10,35 +10,10 @@ variable "region" {
   default     = "us-south"
 }
 
-variable "admin_pass" {
-  type        = string
-  default     = null
-  sensitive   = true
-  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
-}
-
-variable "users" {
-  type = list(object({
-    name     = string
-    password = string
-    type     = optional(string)
-    role     = optional(string)
-  }))
-  default     = []
-  sensitive   = true
-  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters."
-}
-
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"
-  default     = "complete-rabbitmq"
-}
-
-variable "rabbitmq_version" {
-  type        = string
-  description = "Version of rabbitmq to deploy"
-  default     = null
+  default     = "rabbitmq"
 }
 
 variable "resource_group" {
@@ -57,6 +32,31 @@ variable "access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the rabbitmq instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
   default     = []
+}
+
+variable "rabbitmq_version" {
+  type        = string
+  description = "Version of rabbitmq to deploy"
+  default     = null
+}
+
+variable "admin_pass" {
+  type        = string
+  default     = null
+  sensitive   = true
+  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
+}
+
+variable "users" {
+  type = list(object({
+    name     = string
+    password = string
+    type     = optional(string)
+    role     = optional(string)
+  }))
+  default     = []
+  sensitive   = true
+  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters."
 }
 
 variable "auto_scaling" {

@@ -40,7 +40,7 @@ const regionSelectionPath = "../common-dev-assets/common-go-assets/icd-region-pr
 // Define a struct with fields that match the structure of the YAML data
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
-var permanentResources map[string]any
+var permanentResources map[string]interface{}
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
@@ -79,7 +79,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		WaitJobCompleteMinutes: 60,
 	})
 
-	serviceCredentialSecrets := []map[string]any{
+	serviceCredentialSecrets := []map[string]interface{}{
 		{
 			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
@@ -108,48 +108,53 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
+		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
-		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 	}
 	err = options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
+func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       fullyConfigurableSolutionTerraformDir,
-		BestRegionYAMLPath: regionSelectionPath,
-		Prefix:             "rmq-upg",
-		ResourceGroup:      resourceGroup,
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing:       t,
+		Region:        "us-south",
+		Prefix:        "rmq-upgv",
+		ResourceGroup: resourceGroup,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			securityEnforcedTerraformDir + "/*.tf",
+		},
+		TemplateFolder:             securityEnforcedTerraformDir,
+		Tags:                       []string{"rmq-upgv"},
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     120,
+		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]any{
-		"prefix":                       options.Prefix,
-		"access_tags":                  permanentResources["accessTags"],
-		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
-		"kms_encryption_enabled":       true,
-		"kms_endpoint_type":            "public",
-		"provider_visibility":          "public",
-		"existing_resource_group_name": resourceGroup,
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 	}
 
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-	}
+	err := options.RunSchematicUpgradeTest()
+	assert.Nil(t, err, "This should not have errored")
 }
 
 func TestRunSecurityEnforcedSchematics(t *testing.T) {
@@ -165,13 +170,13 @@ func TestRunSecurityEnforcedSchematics(t *testing.T) {
 		},
 		TemplateFolder:         securityEnforcedTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
-		Prefix:                 "rmq-sec",
+		Prefix:                 "rmq-se-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
 		WaitJobCompleteMinutes: 60,
 	})
 
-	serviceCredentialSecrets := []map[string]any{
+	serviceCredentialSecrets := []map[string]interface{}{
 		{
 			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
@@ -202,16 +207,17 @@ func TestRunSecurityEnforcedSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
-		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 	}
 	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
@@ -298,7 +304,7 @@ func TestRunExistingInstance(t *testing.T) {
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/basic",
-		Vars: map[string]any{
+		Vars: map[string]interface{}{
 			"prefix":            prefix,
 			"region":            region,
 			"resource_group":    resourceGroup,
@@ -332,10 +338,11 @@ func TestRunExistingInstance(t *testing.T) {
 		})
 
 		options.TerraformVars = []testschematic.TestSchematicTerraformVar{
-			{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 			{Name: "prefix", Value: options.Prefix, DataType: "string"},
+			{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 			{Name: "existing_rabbitmq_instance_crn", Value: terraform.Output(t, existingTerraformOptions, "rabbitmq_crn"), DataType: "string"},
 			{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+			{Name: "deletion_protection", Value: false, DataType: "bool"},
 			{Name: "region", Value: region, DataType: "string"},
 			{Name: "provider_visibility", Value: "public", DataType: "string"},
 		}
