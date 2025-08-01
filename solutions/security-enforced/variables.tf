@@ -10,8 +10,9 @@ variable "ibmcloud_api_key" {
 
 variable "existing_resource_group_name" {
   type        = string
-  description = "The name of an existing resource group to provision the Databases for RabbitMQ in."
+  description = "The name of an existing resource group to provision resource in."
   default     = "Default"
+  nullable    = false
 }
 
 variable "prefix" {
@@ -97,6 +98,11 @@ variable "member_host_flavor" {
   type        = string
   description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
   default     = "multitenant"
+  # Prevent null or "", require multitenant or a machine type
+  validation {
+    condition     = (length(var.member_host_flavor) > 0)
+    error_message = "Member host flavor must be specified. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  }
 }
 
 variable "service_credential_names" {
@@ -125,7 +131,7 @@ variable "users" {
 }
 
 variable "resource_tags" {
-  type        = list(any)
+  type        = list(string)
   description = "The list of resource tags to be added to the Messages for RabbitMQ instance."
   default     = []
 }
@@ -134,6 +140,18 @@ variable "access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Messages for RabbitMQ instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
+}
+
+variable "deletion_protection" {
+  type        = bool
+  description = "Enable deletion protection within terraform. This is not a property of the resource and does not prevent deletion outside of terraform. The database can not be deleted by terraform when this value is set to 'true'. In order to delete with terraform the value must be set to 'false' and a terraform apply performed before the destroy is performed. The default is 'true'."
+  default     = true
+}
+
+variable "timeouts_update" {
+  type        = string
+  description = "A database update may require a longer timeout for the update to complete. The default is 120 minutes. Set this variable to change the `update` value in the `timeouts` block. [Learn more](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts)."
+  default     = "120m"
 }
 
 ##############################################################
@@ -233,9 +251,9 @@ variable "auto_scaling" {
   default     = null
 }
 
-##############################################################################
-## Secrets Manager Service Credentials
-##############################################################################
+#############################################################################
+# Secrets Manager Service Credentials
+#############################################################################
 
 variable "existing_secrets_manager_instance_crn" {
   type        = string

@@ -1,14 +1,13 @@
 module "icd_rabbitmq" {
   source                                               = "../fully-configurable"
-  prefix                                               = var.prefix
   ibmcloud_api_key                                     = var.ibmcloud_api_key
   existing_resource_group_name                         = var.existing_resource_group_name
+  prefix                                               = var.prefix
   name                                                 = var.name
   provider_visibility                                  = "private"
   region                                               = var.region
-  rabbitmq_version                                     = var.rabbitmq_version
   existing_rabbitmq_instance_crn                       = var.existing_rabbitmq_instance_crn
-  service_endpoints                                    = "private"
+  rabbitmq_version                                     = var.rabbitmq_version
   members                                              = var.members
   member_memory_mb                                     = var.member_memory_mb
   member_cpu_count                                     = var.member_cpu_count
@@ -28,7 +27,7 @@ module "icd_rabbitmq" {
   key_ring_name                                        = var.key_ring_name
   key_name                                             = var.key_name
   existing_backup_kms_key_crn                          = var.existing_backup_kms_key_crn
-  use_default_backup_encryption_key                    = "false"
+  use_default_backup_encryption_key                    = false
   backup_crn                                           = var.backup_crn
   auto_scaling                                         = var.auto_scaling
   existing_secrets_manager_instance_crn                = var.existing_secrets_manager_instance_crn
@@ -38,5 +37,9 @@ module "icd_rabbitmq" {
   admin_pass_secrets_manager_secret_group              = var.admin_pass_secrets_manager_secret_group
   use_existing_admin_pass_secrets_manager_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
   admin_pass_secrets_manager_secret_name               = var.admin_pass_secrets_manager_secret_name
+  service_endpoints                                    = "private"
+  deletion_protection                                  = var.deletion_protection
+  version_upgrade_skip_backup                          = false
+  timeouts_update                                      = var.timeouts_update
   cbr_rules                                            = var.cbr_rules
 }
