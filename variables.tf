@@ -21,9 +21,9 @@ variable "rabbitmq_version" {
     condition = anytrue([
       var.rabbitmq_version == null,
       var.rabbitmq_version == "3.13",
-      var.rabbitmq_version == "4.0",
+      var.rabbitmq_version == "4.1",
     ])
-    error_message = "Version must be 3.13 or 4.0. If no value passed, the current ICD preferred version is used."
+    error_message = "Version must be 3.13 or 4.1. If no value passed, the current ICD preferred version is used."
   }
 }
 

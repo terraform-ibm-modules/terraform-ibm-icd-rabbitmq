@@ -29,7 +29,7 @@ const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedTerraformDir = "solutions/security-enforced"
 const completeExampleTerraformDir = "examples/complete"
 const earliestVersion = "3.13"
-const latestVersion = "4.0"
+const latestVersion = "4.1"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-rabbitmq"
