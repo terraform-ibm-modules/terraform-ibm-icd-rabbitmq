@@ -35,11 +35,22 @@ output "service_credentials_object" {
 }
 
 output "hostname" {
-  description = "Database hostname. Only contains value when var.service_credential_names or var.users are set."
+  description = "Database connection hostname"
   value       = module.icd_rabbitmq.hostname
 }
 
 output "port" {
-  description = "Database port. Only contains value when var.service_credential_names or var.users are set."
+  description = "Database connection port"
   value       = module.icd_rabbitmq.port
+}
+
+output "secrets_manager_secrets" {
+  description = "Service credential secrets"
+  value       = module.icd_rabbitmq.secrets_manager_secrets
+}
+
+output "admin_pass" {
+  description = "RabbitMQ administrator password"
+  value       = module.icd_rabbitmq.admin_pass
+  sensitive   = true
 }

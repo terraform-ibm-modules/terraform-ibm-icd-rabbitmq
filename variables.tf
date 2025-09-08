@@ -20,10 +20,10 @@ variable "rabbitmq_version" {
   validation {
     condition = anytrue([
       var.rabbitmq_version == null,
-      var.rabbitmq_version == "3.12",
-      var.rabbitmq_version == "3.13"
+      var.rabbitmq_version == "3.13",
+      var.rabbitmq_version == "4.1",
     ])
-    error_message = "Version must be 3.12 or 3.13. If no value passed, the current ICD preferred version is used."
+    error_message = "Version must be 3.13 or 4.1. If no value passed, the current ICD preferred version is used."
   }
 }
 
@@ -52,9 +52,9 @@ variable "plan" {
 
 variable "members" {
   type        = number
-  description = "Allocated number of members. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
+  description = "The number of members that are allocated. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
   default     = 3
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+  # Validation is done in terraform plan phase by IBM provider, so no need to add any extra validation here
 }
 
 variable "cpu_count" {
@@ -121,13 +121,13 @@ variable "service_endpoints" {
   default     = "private"
 
   validation {
-    condition     = can(regex("public|public-and-private|private", var.service_endpoints))
+    condition     = can(regex("^(public|public-and-private|private)$", var.service_endpoints))
     error_message = "Valid values for service_endpoints are 'public', 'public-and-private', and 'private'"
   }
 }
 
 variable "tags" {
-  type        = list(any)
+  type        = list(string)
   description = "Optional list of tags to be added to the RabbitMQ instance."
   default     = []
 }
@@ -151,6 +151,24 @@ variable "configuration" {
   })
   description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
   default     = null
+}
+
+variable "version_upgrade_skip_backup" {
+  type        = bool
+  description = "Whether to skip taking a backup before upgrading the database version. Attention: Skipping a backup is not recommended. Skipping a backup before a version upgrade is dangerous and may result in data loss if the upgrade fails at any stage — there will be no immediate backup to restore from."
+  default     = false
+}
+
+variable "deletion_protection" {
+  type        = bool
+  description = "Enable deletion protection within terraform. This is not a property of the resource and does not prevent deletion outside of terraform. The database can not be deleted by terraform when this value is set to 'true'. In order to delete with terraform the value must be set to 'false' and a terraform apply performed before the destroy is performed. The default is 'true'."
+  default     = true
+}
+
+variable "timeouts_update" {
+  type        = string
+  description = "A database update may require a longer timeout for the update to complete. The default is 120 minutes. Set this variable to change the `update` value in the `timeouts` block. [Learn more](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts)."
+  default     = "120m"
 }
 
 ##############################################################
@@ -245,7 +263,7 @@ variable "kms_key_crn" {
 
 variable "use_same_kms_key_for_backups" {
   type        = bool
-  description = "Set this to false if you wan't to use a different key that you own to encrypt backups. When set to false, a value is required for the `backup_encryption_key_crn` input. Alternatiely set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Applies only if `use_ibm_owned_encryption_key` is false. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
+  description = "Set this to false if you wan't to use a different key that you own to encrypt backups. When set to false, a value is required for the `backup_encryption_key_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Applies only if `use_ibm_owned_encryption_key` is false. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
   default     = true
 }
 
@@ -296,6 +314,7 @@ variable "cbr_rules" {
   }))
   description = "(Optional, list) List of context-based restrictions rules to create."
   default     = []
+  # Validation happens in the rule module
 }
 
 ##############################################################

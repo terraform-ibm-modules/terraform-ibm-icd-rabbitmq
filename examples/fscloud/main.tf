@@ -4,7 +4,7 @@
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.2.0"
+  version = "1.3.0"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -39,9 +39,9 @@ resource "ibm_is_subnet" "testacc_subnet" {
 ##############################################################################
 module "cbr_zone" {
   source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-zone-module"
-  version          = "1.31.0"
+  version          = "1.33.2"
   name             = "${var.prefix}-VPC-network-zone"
-  zone_description = "CBR Network zone representing VPC"
+  zone_description = "CBR Network zone containing VPC"
   account_id       = data.ibm_iam_account_settings.iam_account_settings.account_id
   addresses = [{
     type  = "vpc", # to bind a specific vpc to the zone
@@ -54,14 +54,20 @@ module "cbr_zone" {
 ##############################################################################
 
 module "rabbitmq_database" {
-  source                    = "../../modules/fscloud"
+  source = "../../modules/fscloud"
+  # remove the above line and uncomment the below 2 lines to consume the module from the registry
+  # source            = "terraform-ibm-modules/icd-rabbitmq/ibm//modules/fscloud"
+  # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
   resource_group_id         = module.resource_group.resource_group_id
   name                      = "${var.prefix}-rabbitmq"
   region                    = var.region
-  rabbitmq_version          = var.rabbitmq_version
+  tags                      = var.resource_tags
+  access_tags               = var.access_tags
+  deletion_protection       = false
   kms_key_crn               = var.kms_key_crn
   backup_encryption_key_crn = var.backup_encryption_key_crn
   backup_crn                = var.backup_crn
+  rabbitmq_version          = var.rabbitmq_version
   service_credential_names = {
     "rabbitmq_admin" : "Administrator",
     "rabbitmq_operator" : "Operator",
@@ -78,8 +84,6 @@ module "rabbitmq_database" {
     }
   }
   member_host_flavor = "b3c.4x16.encrypted"
-  tags               = var.tags
-  access_tags        = var.access_tags
   cbr_rules = [
     {
       description      = "${var.prefix}-rabbitmq access only from vpc"

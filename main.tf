@@ -1,11 +1,4 @@
 ########################################################################################################################
-# Input variable validation
-# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-#
-# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
-########################################################################################################################
-
-########################################################################################################################
 # Locals
 ########################################################################################################################
 
@@ -19,7 +12,6 @@ locals {
 
   # Determine if host_flavor is used
   host_flavor_set = var.member_host_flavor != null ? true : false
-
 }
 
 ########################################################################################################################
@@ -34,14 +26,14 @@ locals {
 module "kms_key_crn_parser" {
   count   = local.parse_kms_key ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.1.0"
+  version = "1.2.0"
   crn     = var.kms_key_crn
 }
 
 module "backup_key_crn_parser" {
   count   = local.parse_backup_kms_key ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.1.0"
+  version = "1.2.0"
   crn     = local.backup_encryption_key_crn
 }
 
@@ -109,9 +101,8 @@ resource "ibm_iam_authorization_policy" "kms_policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_authorization_policy" {
-  count      = local.create_kms_auth_policy
-  depends_on = [ibm_iam_authorization_policy.kms_policy]
-
+  count           = local.create_kms_auth_policy
+  depends_on      = [ibm_iam_authorization_policy.kms_policy]
   create_duration = "30s"
 }
 
@@ -174,12 +165,14 @@ resource "ibm_database" "rabbitmq_database" {
   resource_group_id = var.resource_group_id
   service_endpoints = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273
-  configuration             = var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null
-  tags                      = var.tags
-  key_protect_key           = var.kms_key_crn
-  backup_encryption_key_crn = local.backup_encryption_key_crn
-  adminpassword             = var.admin_pass
-  backup_id                 = var.backup_crn
+  configuration               = var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null
+  deletion_protection         = var.deletion_protection
+  version_upgrade_skip_backup = var.version_upgrade_skip_backup
+  tags                        = var.tags
+  adminpassword               = var.admin_pass
+  key_protect_key             = var.kms_key_crn
+  backup_encryption_key_crn   = local.backup_encryption_key_crn
+  backup_id                   = var.backup_crn
 
   dynamic "users" {
     for_each = nonsensitive(var.users != null ? var.users : [])
@@ -286,8 +279,7 @@ resource "ibm_database" "rabbitmq_database" {
 
   lifecycle {
     ignore_changes = [
-      # Ignore changes to version because a change here will destroy and recreate the instance
-      version,
+      # Ignore changes to these because a change will destroy and recreate the instance
       key_protect_key,
       backup_encryption_key_crn,
     ]
@@ -295,6 +287,8 @@ resource "ibm_database" "rabbitmq_database" {
 
   timeouts {
     create = "120m" # Extending provisioning time to 120 minutes
+    update = var.timeouts_update
+    delete = "15m"
   }
 }
 
@@ -308,9 +302,11 @@ resource "ibm_resource_tag" "rabbitmq_tag" {
 ##############################################################################
 # Context Based Restrictions
 ##############################################################################
+
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
-  source           = "git::https://github.com/terraform-ibm-modules/terraform-ibm-cbr//modules/cbr-rule-module?ref=v1.31.0"
+  source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module"
+  version          = "1.33.2"
   rule_description = var.cbr_rules[count.index].description
   enforcement_mode = var.cbr_rules[count.index].enforcement_mode
   rule_contexts    = var.cbr_rules[count.index].rule_contexts
@@ -333,6 +329,7 @@ module "cbr_rule" {
       }
     ]
   }]
+  #  There is only 1 operation type for RabbitMQ so it is not exposed as a configuration
   operations = [{
     api_types = [
       {

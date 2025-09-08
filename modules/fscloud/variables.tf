@@ -84,7 +84,7 @@ variable "service_credential_names" {
 }
 
 variable "tags" {
-  type        = list(any)
+  type        = list(string)
   description = "Optional list of tags to be added to the RabbitMQ instance."
   default     = []
 }
@@ -101,6 +101,24 @@ variable "configuration" {
   })
   description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
   default     = null
+}
+
+variable "version_upgrade_skip_backup" {
+  type        = bool
+  description = "Whether to skip taking a backup before upgrading the database version. Attention: Skipping a backup is not recommended. Skipping a backup before a version upgrade is dangerous and may result in data loss if the upgrade fails at any stage — there will be no immediate backup to restore from."
+  default     = false
+}
+
+variable "deletion_protection" {
+  type        = bool
+  description = "Enable deletion protection within terraform. This is not a property of the resource and does not prevent deletion outside of terraform. The database can not be deleted by terraform when this value is set to 'true'. In order to delete with terraform the value must be set to 'false' and a terraform apply performed before the destroy is performed. The default is 'true'."
+  default     = true
+}
+
+variable "timeouts_update" {
+  type        = string
+  description = "A database update may require a longer timeout for the update to complete. The default is 120 minutes. Set this variable to change the `update` value in the `timeouts` block. [Learn more](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts)."
+  default     = "120m"
 }
 
 ##############################################################
@@ -160,7 +178,7 @@ variable "kms_key_crn" {
 
 variable "use_same_kms_key_for_backups" {
   type        = bool
-  description = "Set this to false if you wan't to use a different key that you own to encrypt backups. When set to false, a value is required for the `backup_encryption_key_crn` input. Alternatiely set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Applies only if `use_ibm_owned_encryption_key` is false. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
+  description = "Set this to false if you wan't to use a different key that you own to encrypt backups. When set to false, a value is required for the `backup_encryption_key_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Applies only if `use_ibm_owned_encryption_key` is false. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
   default     = true
 }
 

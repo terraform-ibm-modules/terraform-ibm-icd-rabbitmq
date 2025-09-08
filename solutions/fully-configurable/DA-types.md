@@ -69,7 +69,7 @@ The following example includes all the configuration options for four service cr
   {
     "secret_group_name": "sg-1"
     "existing_secret_group": true
-    "service_credentials": [                                              # pragma: allowlist secret
+    "service_credentials": [                                             # pragma: allowlist secret
       {
         "secret_name": "cred-1"
         "service_credentials_source_service_role_crn":  "crn:v1:bluemix:public:iam::::role:Editor"
@@ -117,17 +117,16 @@ If you can't use the IAM-enabled `service_credential_names` input variable for a
 
 ### Example users
 
-
 ```hcl
 [
   {
     "name": "es_admin",
-    "password": "securepassword123",  # pragma: allowlist secret
+    "password": "securepassword123",
     "type": "database",
   },
   {
     "name": "es_reader",
-    "password": "readpassword123",  # pragma: allowlist secret
+    "password": "readpassword123",
     "type": "ops_manager"
   }
 ]
@@ -138,7 +137,7 @@ If you can't use the IAM-enabled `service_credential_names` input variable for a
 The Autoscaling variable sets the rules for how database increase resources in response to usage. Make sure you understand the effects of autoscaling, especially for production environments. For more information, see [Autoscaling](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-autoscaling&interface=ui#autoscaling-consider).
 
 - Variable name: `auto_scaling`
-- Type: An object with `disk` and `memory` configurations.
+- Type: An object with `disk` and `memory` configurations
 
 ### Disk options for auto_scaling
 
@@ -155,7 +154,6 @@ The disk object in the `auto_scaling` input contains the following options. All 
 - `rate_limit_mb_per_member`: The limit in megabytes for the rate of disk increase per member (default: `3670016`).
 - `rate_period_seconds`: How long (in seconds) the rate limit is applied for disk (default: `900` (15 minutes)).
 - `rate_units`: The units to use for the rate increase (default: `"mb"` (megabytes)).
-
 
 ### Memory options for auto_scaling
 
