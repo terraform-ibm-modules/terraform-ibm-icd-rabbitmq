@@ -43,7 +43,7 @@ variable "prefix" {
 
 variable "name" {
   type        = string
-  description = "The name of the Databases for RabbitMQ instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The name of the Messages for RabbitMQ instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "rabbitmq"
 }
 
@@ -120,6 +120,16 @@ variable "member_host_flavor" {
   }
 }
 
+variable "configuration" {
+  type = object({
+    delete_undefined_queues = optional(bool)
+  })
+  description = "Messages for RabbitMQ configuration parameters, see https://cloud.ibm.com/docs/messages-for-rabbitmq for more details."
+  default = {
+    delete_undefined_queues = true
+  }
+}
+
 variable "service_credential_names" {
   description = "Map of name, role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/blob/main/solutions/standard/DA-types.md#svc-credential-name)"
   type        = map(string)
@@ -155,16 +165,6 @@ variable "access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Messages for RabbitMQ instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
-}
-
-variable "configuration" {
-  type = object({
-    delete_undefined_queues = optional(bool)
-  })
-  description = "Database configuration parameters, see https://cloud.ibm.com/docs/messages-for-rabbitmq for more details."
-  default = {
-    delete_undefined_queues = true
-  }
 }
 
 variable "version_upgrade_skip_backup" {
@@ -235,7 +235,7 @@ variable "kms_endpoint_type" {
 
 variable "skip_rabbitmq_kms_auth_policy" {
   type        = bool
-  description = "Whether to create an IAM authorization policy that permits all Databases for RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance specified in the `existing_kms_instance_crn` variable."
+  description = "Whether to create an IAM authorization policy that permits all Messages for RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance specified in the `existing_kms_instance_crn` variable."
   default     = false
 }
 
@@ -249,13 +249,13 @@ variable "ibmcloud_kms_api_key" {
 variable "key_ring_name" {
   type        = string
   default     = "rabbitmq-key-ring"
-  description = "The name for the key ring created for the Databases for RabbitMQ key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The name for the key ring created for the Messages for RabbitMQ key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
 }
 
 variable "key_name" {
   type        = string
   default     = "rabbitmq-key"
-  description = "The name for the key created for the Databases for RabbitMQ key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The name for the key created for the Messages for RabbitMQ key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
 }
 
 variable "existing_backup_kms_key_crn" {
@@ -333,7 +333,7 @@ variable "auto_scaling" {
 variable "existing_secrets_manager_instance_crn" {
   type        = string
   default     = null
-  description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for RabbitMQ instance."
+  description = "The CRN of existing secrets manager to use to create service credential secrets for Messages for RabbitMQ instance."
 }
 
 variable "existing_secrets_manager_endpoint_type" {
@@ -365,7 +365,7 @@ variable "service_credential_secrets" {
     }))
   }))
   default     = []
-  description = "Service credential secrets configuration for Databases for RabbitMQ. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions/standard/DA-types.md#service-credential-secrets)."
+  description = "Service credential secrets configuration for Messages for RabbitMQ. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions/standard/DA-types.md#service-credential-secrets)."
 
   validation {
     # Service roles CRNs can be found at https://cloud.ibm.com/iam/roles, select the IBM Cloud Database and select the role
@@ -389,7 +389,7 @@ variable "service_credential_secrets" {
 
 variable "skip_rabbitmq_secrets_manager_auth_policy" {
   type        = bool
-  description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for RabbitMQ. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the RabbitMQ instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
+  description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Messages for RabbitMQ. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the RabbitMQ instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
   default     = false
 }
 

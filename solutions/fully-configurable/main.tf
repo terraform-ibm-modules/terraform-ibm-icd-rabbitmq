@@ -334,7 +334,7 @@ module "sm_instance_crn_parser" {
   crn     = var.existing_secrets_manager_instance_crn
 }
 
-# create a service authorization between Secrets Manager and the target service (Databases for RabbitMQ)
+# create a service authorization between Secrets Manager and the target service (Messages for RabbitMQ)
 resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
   count                       = local.create_sm_auth_policy
   source_service_name         = "secrets-manager"

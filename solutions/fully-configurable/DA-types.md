@@ -1,11 +1,12 @@
-# Configuring complex inputs in Databases for RabbitMQ
+# Configuring complex inputs in Messages for RabbitMQ
 
-Several optional input variables in the IBM Cloud [Databases for RabbitMQ deployable architecture](https://cloud.ibm.com/catalog#deployable_architecture) use complex object types. You specify these inputs when you configure deployable architecture.
+Several optional input variables in the IBM Cloud [Messages for RabbitMQ deployable architecture](https://cloud.ibm.com/catalog#deployable_architecture) use complex object types. You specify these inputs when you configure deployable architecture.
 
 - [Service credentials](#svc-credential-name) (`service_credential_names`)
 - [Service credential secrets](#service-credential-secrets) (`service_credential_secrets`)
 - [Users](#users) (`users`)
 - [Autoscaling](#autoscaling) (`auto_scaling`)
+- [Configuration](#configuration) (`configuration`)
 
 ## Service credentials <a name="svc-credential-name"></a>
 
