@@ -22,7 +22,7 @@ repository:
 
   # Uncomment this description property
   # and update the description to the current repo description.
-  description: "Implements an instance of the IBM Cloud Databases for RabbitMQ."
+  description: "Implements an instance of the IBM Cloud Messages for RabbitMQ."
 
   # Uncomment this topics property
   # and add a comma-separated list of topics to set on the repo.

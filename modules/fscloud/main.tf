@@ -26,5 +26,6 @@ module "rabbitmq_database" {
   cpu_count                         = var.cpu_count
   member_host_flavor                = var.member_host_flavor
   auto_scaling                      = var.auto_scaling
+  configuration                     = var.configuration
   service_credential_names          = var.service_credential_names
 }
