@@ -257,12 +257,7 @@
               "key": "auto_scaling"
             },
             {
-              "key": "configuration",
-              "custom_config": {
-                "type": "code_editor",
-                "grouping": "deployment",
-                "original_grouping": "deployment"
-              }
+              "key": "configuration"
             },
             {
               "key": "service_endpoints",
@@ -291,12 +286,7 @@
               "key": "version_upgrade_skip_backup"
             },
             {
-              "key": "service_credential_names",
-              "custom_config": {
-                "type": "code_editor",
-                "grouping": "deployment",
-                "original_grouping": "deployment"
-              }
+              "key": "service_credential_names"
             },
             {
               "key": "service_credential_secrets",
@@ -600,12 +590,7 @@
               "key": "auto_scaling"
             },
             {
-              "key": "configuration",
-              "custom_config": {
-                "type": "code_editor",
-                "grouping": "deployment",
-                "original_grouping": "deployment"
-              }
+              "key": "configuration"
             },
             {
               "key": "deletion_protection"
@@ -614,12 +599,7 @@
               "key": "timeouts_update"
             },
             {
-              "key": "service_credential_names",
-              "custom_config": {
-                "type": "code_editor",
-                "grouping": "deployment",
-                "original_grouping": "deployment"
-              }
+              "key": "service_credential_names"
             },
             {
               "key": "service_credential_secrets",
