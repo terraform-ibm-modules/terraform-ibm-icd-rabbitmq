@@ -13,6 +13,7 @@ module "icd_rabbitmq" {
   member_cpu_count                                     = var.member_cpu_count
   member_disk_mb                                       = var.member_disk_mb
   member_host_flavor                                   = var.member_host_flavor
+  configuration                                        = var.configuration
   service_credential_names                             = var.service_credential_names
   admin_pass                                           = var.admin_pass
   users                                                = var.users

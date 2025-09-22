@@ -1,11 +1,12 @@
-# Configuring complex inputs in Databases for RabbitMQ
+# Configuring complex inputs in Messages for RabbitMQ
 
-Several optional input variables in the IBM Cloud [Databases for RabbitMQ deployable architecture](https://cloud.ibm.com/catalog#deployable_architecture) use complex object types. You specify these inputs when you configure deployable architecture.
+Several optional input variables in the IBM Cloud [Messages for RabbitMQ deployable architecture](https://cloud.ibm.com/catalog#deployable_architecture) use complex object types. You specify these inputs when you configure deployable architecture.
 
 - [Service credentials](#svc-credential-name) (`service_credential_names`)
 - [Service credential secrets](#service-credential-secrets) (`service_credential_secrets`)
 - [Users](#users) (`users`)
 - [Autoscaling](#autoscaling) (`auto_scaling`)
+- [Configuration](#configuration) (`configuration`)
 
 ## Service credentials <a name="svc-credential-name"></a>
 
@@ -193,5 +194,30 @@ The following example shows values for both disk and memory for the `auto_scalin
       "rate_period_seconds": 900,
       "rate_units": "mb"
   }
+}
+```
+
+## Configuration  <a name="configuration"></a>
+
+The Configuration variable tunes messages for RabbitMQ to suit different use case. For more information, see [Configuration](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request).
+
+- Variable name: `configuration`
+- Type: An object with multiple attributes i.e.  `delete_undefined_queues`
+
+### Options for configuration
+
+The configuration object in the input contains the following options
+
+**Available Settings. [Learn more](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request)**
+
+- `delete_undefined_queues`: Automatically delete undefined queues. (default: `true`).
+
+### Example configuration
+
+The following example shows values for the `configuration` input.
+
+```hcl
+{
+    delete_undefined_queues      = true
 }
 ```

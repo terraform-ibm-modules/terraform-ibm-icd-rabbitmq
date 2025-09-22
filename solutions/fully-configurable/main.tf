@@ -298,6 +298,7 @@ module "rabbitmq" {
   disk_mb                           = var.member_disk_mb
   cpu_count                         = var.member_cpu_count
   auto_scaling                      = var.auto_scaling
+  configuration                     = var.configuration
   service_credential_names          = var.service_credential_names
   backup_crn                        = var.backup_crn
   service_endpoints                 = var.service_endpoints
@@ -333,7 +334,7 @@ module "sm_instance_crn_parser" {
   crn     = var.existing_secrets_manager_instance_crn
 }
 
-# create a service authorization between Secrets Manager and the target service (Databases for RabbitMQ)
+# create a service authorization between Secrets Manager and the target service (Messages for RabbitMQ)
 resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
   count                       = local.create_sm_auth_policy
   source_service_name         = "secrets-manager"
@@ -386,7 +387,7 @@ locals {
     ]
   }]
 
-  # Concatinate into 1 secrets object
+  # Concatenate into 1 secrets object
   secrets = concat(local.service_credential_secrets, local.admin_pass_secret)
   # Parse Secrets Manager details from the CRN
   existing_secrets_manager_instance_guid   = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].service_instance : null
