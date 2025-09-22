@@ -10,7 +10,7 @@
         "terraform",
         "solution",
         "data_management",
-        "converged_infra"
+        "platform_engineering"
       ],
       "keywords": [
         "rabbitmq",
