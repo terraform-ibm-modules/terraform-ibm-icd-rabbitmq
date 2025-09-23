@@ -256,7 +256,12 @@
               "key": "member_host_flavor"
             },
             {
-              "key": "auto_scaling"
+              "key": "auto_scaling",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "configuration",
@@ -601,7 +606,12 @@
               "key": "member_host_flavor"
             },
             {
-              "key": "auto_scaling"
+              "key": "auto_scaling",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "configuration",
