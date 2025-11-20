@@ -310,7 +310,7 @@ variable "backup_crn" {
   validation {
     condition = anytrue([
       var.backup_crn == null,
-      can(regex("crn:v\\d:(.*:){2}messages-for-rabbitmq:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:backup:[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$", var.backup_crn))
+      can(regex("^crn:v\\d:(.*:){2}messages-for-rabbitmq:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:backup:[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$", var.backup_crn))
     ])
     error_message = "backup_crn must be null OR starts with 'crn:' and contains ':backup:'"
   }
