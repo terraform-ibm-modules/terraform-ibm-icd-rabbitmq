@@ -310,7 +310,7 @@ func TestPlanValidation(t *testing.T) {
 	options.TerraformOptions.Vars = map[string]any{
 		"prefix":                       options.Prefix,
 		"region":                       "us-south",
-		"rabbitmq_version":             oldestVersion,
+		"rabbitmq_version":             latestVersion,
 		"provider_visibility":          "public",
 		"existing_resource_group_name": resourceGroup,
 	}
@@ -379,7 +379,7 @@ func TestRunExistingInstance(t *testing.T) {
 			"prefix":            prefix,
 			"region":            region,
 			"resource_group":    resourceGroup,
-			"rabbitmq_version":  latestVersion,
+			"rabbitmq_version":  oldestVersion,
 			"service_endpoints": "public-and-private",
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
