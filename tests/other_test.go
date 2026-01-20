@@ -66,7 +66,7 @@ func TestRunCompleteExample(t *testing.T) {
 		BestRegionYAMLPath: regionSelectionPath,
 		ResourceGroup:      resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"rabbitmq_version": earliestVersion, // Always lock to the lowest supported RabbitMQ version
+			"rabbitmq_version": oldestVersion, // Always lock to the lowest supported RabbitMQ version
 			"users": []map[string]interface{}{
 				{
 					"name":     "testuser",

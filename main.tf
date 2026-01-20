@@ -155,6 +155,19 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 # RabbitMQ instance
 ########################################################################################################################
 
+module "available_versions" {
+
+  source   = "terraform-ibm-modules/common-utilities/ibm//modules/icd-versions"
+  version  = "1.4.1"
+  region   = var.region
+  icd_type = "redis"
+}
+
+
+locals {
+  icd_supported_versions = module.available_versions.supported_versions
+}
+
 resource "ibm_database" "rabbitmq_database" {
   depends_on        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   name              = var.name

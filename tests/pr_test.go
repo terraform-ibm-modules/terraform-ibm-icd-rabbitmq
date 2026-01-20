@@ -9,6 +9,8 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -28,8 +30,11 @@ import (
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedTerraformDir = "solutions/security-enforced"
 const completeExampleTerraformDir = "examples/complete"
-const earliestVersion = "3.13"
-const latestVersion = "4.1"
+
+var oldestVersion string
+var latestVersion string
+
+const icdType = "rabbitmq"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-rabbitmq"
@@ -55,6 +60,24 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersions(icdType)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(icdAvailableVersions) == 0 {
+		log.Fatal("No available ICD versions found")
+	}
+	sort.Slice(icdAvailableVersions, func(i, j int) bool {
+		vi, _ := strconv.ParseFloat(icdAvailableVersions[i], 64)
+		vj, _ := strconv.ParseFloat(icdAvailableVersions[j], 64)
+		return vi < vj
+	})
+
+	latestVersion = icdAvailableVersions[len(icdAvailableVersions)-1]
+	oldestVersion = icdAvailableVersions[0]
 
 	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
 	if err != nil {
@@ -275,7 +298,7 @@ func TestPlanValidation(t *testing.T) {
 	options.TerraformOptions.Vars = map[string]any{
 		"prefix":                       options.Prefix,
 		"region":                       "us-south",
-		"rabbitmq_version":             earliestVersion,
+		"rabbitmq_version":             oldestVersion,
 		"provider_visibility":          "public",
 		"existing_resource_group_name": resourceGroup,
 	}
