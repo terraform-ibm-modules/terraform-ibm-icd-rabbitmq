@@ -31,9 +31,6 @@ const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedTerraformDir = "solutions/security-enforced"
 const completeExampleTerraformDir = "examples/complete"
 
-var oldestVersion string
-var latestVersion string
-
 const icdType = "rabbitmq"
 
 // Use existing resource group
@@ -53,15 +50,17 @@ var validICDRegions = []string{
 	"us-south",
 }
 
-// TestMain will be run before any parallel tests, used to read data from yaml for use with tests
-func TestMain(m *testing.M) {
-	var err error
-	sharedInfoSvc, err = cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
+func GetRegionVersions(region string) (string, string) {
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
+		IcdRegion: region,
+	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersions(icdType)
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
 
 	if err != nil {
 		log.Fatal(err)
@@ -94,8 +93,20 @@ func TestMain(m *testing.M) {
 		return minorI < minorJ
 	})
 
-	latestVersion = icdAvailableVersions[len(icdAvailableVersions)-1]
-	oldestVersion = icdAvailableVersions[0]
+	fmt.Println("version list is ", icdAvailableVersions)
+	latestVersion := icdAvailableVersions[len(icdAvailableVersions)-1]
+	oldestVersion := icdAvailableVersions[0]
+
+	return latestVersion, oldestVersion
+}
+
+// TestMain will be run before any parallel tests, used to read data from yaml for use with tests
+func TestMain(m *testing.M) {
+	var err error
+	sharedInfoSvc, err = cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
 	if err != nil {
@@ -150,6 +161,8 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		log.Fatalf("Error converting to JSON: %s", err)
 	}
 
+	region := options.Region
+	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
@@ -157,6 +170,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
+		{Name: "region", Value: region, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
@@ -216,10 +230,14 @@ func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 		log.Fatalf("Error converting to JSON: %s", err)
 	}
 
+	region := options.Region
+	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "region", Value: region, DataType: "string"},
+		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"},
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
@@ -282,12 +300,15 @@ func TestRunSecurityEnforcedSchematics(t *testing.T) {
 
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
 
+	region := options.Region
+	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
+		{Name: "region", Value: region, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
@@ -313,6 +334,8 @@ func TestPlanValidation(t *testing.T) {
 	options.TestSetup()
 	options.TerraformOptions.NoColor = true
 	options.TerraformOptions.Logger = logger.Discard
+
+	latestVersion, _ := GetRegionVersions("us-south")
 	options.TerraformOptions.Vars = map[string]any{
 		"prefix":                       options.Prefix,
 		"region":                       "us-south",
@@ -379,6 +402,8 @@ func TestRunExistingInstance(t *testing.T) {
 	require.NotEqual(t, "", val, checkVariable+" environment variable is empty")
 
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
+
+	_, oldestVersion := GetRegionVersions(region)
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/basic",
 		Vars: map[string]interface{}{

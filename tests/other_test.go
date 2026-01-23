@@ -40,7 +40,6 @@ func TestRunCompleteExample(t *testing.T) {
 		BestRegionYAMLPath: regionSelectionPath,
 		ResourceGroup:      resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"rabbitmq_version": latestVersion,
 			"users": []map[string]interface{}{
 				{
 					"name":     "testuser",
@@ -52,6 +51,10 @@ func TestRunCompleteExample(t *testing.T) {
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
+
+	region := options.Region
+	latestVersion, _ := GetRegionVersions(region)
+	options.TerraformVars["rabbitmq_version"] = latestVersion
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
