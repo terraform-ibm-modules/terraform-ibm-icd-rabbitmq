@@ -18,12 +18,9 @@ variable "rabbitmq_version" {
   default     = null
 
   validation {
-    condition = anytrue([
-      var.rabbitmq_version == null,
-      var.rabbitmq_version == "3.13",
-      var.rabbitmq_version == "4.1",
-    ])
-    error_message = "Version must be 3.13 or 4.1. If no value passed, the current ICD preferred version is used."
+
+    condition     = var.rabbitmq_version == null ? true : contains(local.icd_supported_versions, var.rabbitmq_version)
+    error_message = "Unsupported rabbitmq_version '${var.rabbitmq_version == null ? "null" : var.rabbitmq_version}'. Supported versions: ${join(", ", local.icd_supported_versions)}"
   }
 }
 

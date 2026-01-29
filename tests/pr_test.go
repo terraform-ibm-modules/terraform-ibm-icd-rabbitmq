@@ -9,6 +9,8 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -28,8 +30,8 @@ import (
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedTerraformDir = "solutions/security-enforced"
 const completeExampleTerraformDir = "examples/complete"
-const earliestVersion = "3.13"
-const latestVersion = "4.1"
+
+const icdType = "rabbitmq"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-rabbitmq"
@@ -46,6 +48,56 @@ var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
 	"eu-de",
 	"us-south",
+}
+
+func GetRegionVersions(region string) (string, string) {
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
+		IcdRegion: region,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(icdAvailableVersions) == 0 {
+		log.Fatal("No available ICD versions found")
+	}
+
+	sort.Slice(icdAvailableVersions, func(i, j int) bool {
+		partsI := strings.Split(icdAvailableVersions[i], ".")
+		partsJ := strings.Split(icdAvailableVersions[j], ".")
+
+		majorI, _ := strconv.Atoi(partsI[0])
+		majorJ, _ := strconv.Atoi(partsJ[0])
+
+		if majorI != majorJ {
+			return majorI < majorJ
+		}
+
+		minorI := 0
+		minorJ := 0
+
+		if len(partsI) >= 2 {
+			minorI, _ = strconv.Atoi(partsI[1])
+		}
+		if len(partsJ) >= 2 {
+			minorJ, _ = strconv.Atoi(partsJ[1])
+		}
+		return minorI < minorJ
+	})
+
+	fmt.Println("version list is ", icdAvailableVersions)
+	latestVersion := icdAvailableVersions[len(icdAvailableVersions)-1]
+	oldestVersion := icdAvailableVersions[0]
+
+	return latestVersion, oldestVersion
 }
 
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
@@ -109,6 +161,8 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		log.Fatalf("Error converting to JSON: %s", err)
 	}
 
+	region := "us-south"
+	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
@@ -116,6 +170,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
+		{Name: "region", Value: region, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
@@ -175,10 +230,14 @@ func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 		log.Fatalf("Error converting to JSON: %s", err)
 	}
 
+	region := "us-south"
+	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "region", Value: region, DataType: "string"},
+		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"},
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
@@ -241,12 +300,15 @@ func TestRunSecurityEnforcedSchematics(t *testing.T) {
 
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
 
+	region := "us-south"
+	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
+		{Name: "region", Value: region, DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
@@ -272,10 +334,12 @@ func TestPlanValidation(t *testing.T) {
 	options.TestSetup()
 	options.TerraformOptions.NoColor = true
 	options.TerraformOptions.Logger = logger.Discard
+
+	latestVersion, _ := GetRegionVersions("us-south")
 	options.TerraformOptions.Vars = map[string]any{
 		"prefix":                       options.Prefix,
 		"region":                       "us-south",
-		"rabbitmq_version":             earliestVersion,
+		"rabbitmq_version":             latestVersion,
 		"provider_visibility":          "public",
 		"existing_resource_group_name": resourceGroup,
 	}
@@ -338,13 +402,15 @@ func TestRunExistingInstance(t *testing.T) {
 	require.NotEqual(t, "", val, checkVariable+" environment variable is empty")
 
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
+
+	_, oldestVersion := GetRegionVersions(region)
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/basic",
 		Vars: map[string]interface{}{
 			"prefix":            prefix,
 			"region":            region,
 			"resource_group":    resourceGroup,
-			"rabbitmq_version":  latestVersion,
+			"rabbitmq_version":  oldestVersion,
 			"service_endpoints": "public-and-private",
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
