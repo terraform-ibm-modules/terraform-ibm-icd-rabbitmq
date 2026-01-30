@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
 
@@ -43,11 +44,11 @@ func TestRunCompleteExample(t *testing.T) {
 			"users": []map[string]interface{}{
 				{
 					"name":     "testuser",
-					"password": GetRandomAdminPassword(t),
+					"password": common.GetRandomPasswordWithPrefix(),
 					"type":     "database",
 				},
 			},
-			"admin_pass": GetRandomAdminPassword(t),
+			"admin_pass": common.GetRandomPasswordWithPrefix(),
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
