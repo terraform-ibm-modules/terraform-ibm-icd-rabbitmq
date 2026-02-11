@@ -54,3 +54,28 @@ output "admin_pass" {
   value       = local.admin_pass
   sensitive   = true
 }
+
+output "next_steps_text" {
+  value       = "Your Messages for RabbitMQ instance is ready. You can now take advantage of multiple messaging protocols, achieve customizable persistence levels and low latency, while routing, tracking, and queuing messages in a fully managed, distributed system."
+  description = "Next steps text"
+}
+
+output "next_step_primary_label" {
+  value       = "Deployment Details"
+  description = "Primary label"
+}
+
+output "next_step_primary_url" {
+  value       = "https://cloud.ibm.com/services/messages-for-rabbitmq/${local.rabbitmq_crn}"
+  description = "Primary URL"
+}
+
+output "next_step_secondary_label" {
+  value       = "Learn more about Messages for RabbitMQ"
+  description = "Secondary label"
+}
+
+output "next_step_secondary_url" {
+  value       = "https://cloud.ibm.com/docs/messages-for-rabbitmq"
+  description = "Secondary URL"
+}
