@@ -36,7 +36,7 @@ func TestRunCompleteExample(t *testing.T) {
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
+		TerraformDir:       "examples/complete",
 		Prefix:             "rmq-upg",
 		BestRegionYAMLPath: regionSelectionPath,
 		ResourceGroup:      resourceGroup,
