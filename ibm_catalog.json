@@ -173,11 +173,11 @@
             {
               "key": "rabbitmq_version",
               "required": true,
-              "default_value": "4.1",
+              "default_value": "4.2",
               "options": [
                 {
-                  "displayname": "3.13",
-                  "value": "3.13"
+                  "displayname": "4.2",
+                  "value": "4.2"
                 },
                 {
                   "displayname": "4.1",
@@ -593,11 +593,11 @@
             {
               "key": "rabbitmq_version",
               "required": true,
-              "default_value": "4.1",
+              "default_value": "4.2",
               "options": [
                 {
-                  "displayname": "3.13",
-                  "value": "3.13"
+                  "displayname": "4.2",
+                  "value": "4.2"
                 },
                 {
                   "displayname": "4.1",
