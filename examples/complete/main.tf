@@ -3,12 +3,28 @@
 ##############################################################################
 
 locals {
-  service_credential_names = {
-    "es_admin" : "Administrator",
-    "es_operator" : "Operator",
-    "es_viewer" : "Viewer",
-    "es_editor" : "Editor",
-  }
+  service_credential_names = [
+    {
+      name     = "rabbitmq_admin"
+      role     = "Administrator"
+      endpoint = "private"
+    },
+    {
+      name     = "rabbitmq _operator"
+      role     = "Operator"
+      endpoint = "private"
+    },
+    {
+      name     = "rabbitmq_viewer"
+      role     = "Viewer"
+      endpoint = "private"
+    },
+    {
+      name     = "rabbitmq_editor"
+      role     = "Editor"
+      endpoint = "private"
+    }
+  ]
 }
 
 ##############################################################################
