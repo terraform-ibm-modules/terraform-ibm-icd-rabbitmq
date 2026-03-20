@@ -68,12 +68,28 @@ module "rabbitmq_database" {
   backup_encryption_key_crn = var.backup_encryption_key_crn
   backup_crn                = var.backup_crn
   rabbitmq_version          = var.rabbitmq_version
-  service_credential_names = {
-    "rabbitmq_admin" : "Administrator",
-    "rabbitmq_operator" : "Operator",
-    "rabbitmq_viewer" : "Viewer",
-    "rabbitmq_editor" : "Editor",
-  }
+  service_credential_names = [
+    {
+      name     = "rabbitmq_admin"
+      role     = "Administrator"
+      endpoint = "private"
+    },
+    {
+      name     = "rabbitmq_operator"
+      role     = "Operator"
+      endpoint = "private"
+    },
+    {
+      name     = "rabbitmq_viewer"
+      role     = "Viewer"
+      endpoint = "private"
+    },
+    {
+      name     = "rabbitmq_editor"
+      role     = "Editor"
+      endpoint = "private"
+    }
+  ]
   auto_scaling = {
     disk = {
       capacity_enabled : true,
