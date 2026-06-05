@@ -45,7 +45,6 @@ This module implements an instance of the IBM Cloud Messages for RabbitMQ servic
   <li><a href="./solutions">Deployable Architectures</a>
     <ul>
       <li><a href="./solutions/fully-configurable">Cloud automation for RabbitMQ (Fully configurable)</a></li>
-      <li><a href="./solutions/security-enforced">Cloud automation for RabbitMQ (Security Enforced)</a></li>
     </ul>
   </li>
   <li><a href="#contributing">Contributing</a></li>
