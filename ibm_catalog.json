@@ -70,7 +70,8 @@
               "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
-              "service_name": "messages-for-rabbitmq"
+              "service_name": "messages-for-rabbitmq",
+              "notes": "Required to configure an instance of Messages for RabbitMQ."
             },
             {
               "role_crns": [
