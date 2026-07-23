@@ -14,7 +14,7 @@ The IBM Cloud Framework for Financial Services mandates the application of an in
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >=1.79.2, < 3.0.0 |
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >=2.2.0, < 3.0.0 |
 
 ### Modules
 
@@ -47,6 +47,7 @@ No resources.
 | <a name="input_members"></a> [members](#input\_members) | Allocated number of members. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling) | `number` | `3` | no |
 | <a name="input_memory_mb"></a> [memory\_mb](#input\_memory\_mb) | Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling). | `number` | `8192` | no |
 | <a name="input_name"></a> [name](#input\_name) | The name of the RabbitMQ instance | `string` | n/a | yes |
+| <a name="input_plan"></a> [plan](#input\_plan) | The name of the service plan that you choose for your RebbitMQ instance | `string` | `"standard"` | no |
 | <a name="input_rabbitmq_version"></a> [rabbitmq\_version](#input\_rabbitmq\_version) | The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used. | `string` | `null` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region where you want to deploy your instance. | `string` | `"us-south"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | The resource group ID where the RabbitMQ instance will be created. | `string` | n/a | yes |

@@ -46,21 +46,7 @@ var validICDRegions = []string{
 	"us-south",
 }
 
-func GetRegionVersions(region string) (string, string) {
-
-	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
-		IcdRegion: region,
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+func GetLatestAndOldestVersions(icdAvailableVersions []string) (string, string) {
 
 	if len(icdAvailableVersions) == 0 {
 		log.Fatal("No available ICD versions found")
@@ -96,6 +82,46 @@ func GetRegionVersions(region string) (string, string) {
 	return latestVersion, oldestVersion
 }
 
+func GetRegionVersions(region string) (string, string) {
+
+	icdRegion := region
+	if region == "ca-mon" {
+		icdRegion = "ca-tor"
+	}
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
+		IcdRegion: icdRegion,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return GetLatestAndOldestVersions(icdAvailableVersions)
+}
+
+func GetVersionsGen2(region string, plan string) (string, string) {
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersionsGen2("messages-for-rabbitmq", plan, region) // this function takes service, plan and region as arguments in this specific order
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return GetLatestAndOldestVersions(icdAvailableVersions)
+}
+
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
 func TestMain(m *testing.M) {
 	var err error
@@ -110,6 +136,32 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
+}
+
+func TestRunBasicGen2Example(t *testing.T) {
+	t.Parallel()
+
+	rmqGen2Region := "eu-de"
+	gen2Plan := "standard-gen2"
+	latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:            t,
+		TerraformDir:       "examples/basic",
+		Prefix:             "rmq-gen2",
+		BestRegionYAMLPath: regionSelectionPath,
+		ResourceGroup:      resourceGroup,
+		TerraformVars: map[string]interface{}{
+			"region":            rmqGen2Region,
+			"plan":              gen2Plan,
+			"rabbitmq_version":  latestVersion,
+			"service_endpoints": "private",
+		},
+		CloudInfoService: sharedInfoSvc,
+	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
 }
 
 // Test the fully-configurable DA with defaults (IBM owned encryption keys)
