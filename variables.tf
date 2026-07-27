@@ -38,8 +38,9 @@ variable "plan" {
   validation {
     condition = anytrue([
       var.plan == "standard",
+      var.plan == "standard-gen2",
     ])
-    error_message = "Only standard plan is supported."
+    error_message = "Only supported plans are standard and standard-gen2"
   }
 }
 
@@ -64,8 +65,18 @@ variable "cpu_count" {
 variable "disk_mb" {
   type        = number
   description = "Allocated disk per member. [Learn more](https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-resources-scaling)"
-  default     = 1024
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+  # Retain classic minimum default to avoid impacting existing consumers
+  default = 1024
+  # Gen2 minimum is 10240, although the provider will just say 10.
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.disk_mb >= 10240)
+    error_message = "`disk_mb` for Gen2 must be 10240 or more, either set the `disk_mb` input or select a classic `plan`."
+  }
+
+  validation {
+    condition     = local.is_gen2 || (local.is_classic && var.disk_mb >= 1024)
+    error_message = "`disk_mb` for Classic must be 1024 or more, set the `disk_mb`."
+  }
 }
 
 variable "member_host_flavor" {
@@ -87,6 +98,11 @@ variable "admin_pass" {
   description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
   default     = null
   sensitive   = true
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.admin_pass == null)
+    error_message = "`admin_pass` is only supported for classic instances, remove `admin_pass` or select a classic `plan`."
+  }
 }
 
 variable "users" {
@@ -99,6 +115,11 @@ variable "users" {
   description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the RabbitMQ instance. This blocks creates native RabbitMQ database users, more info on that can be found here https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-user-management"
   default     = []
   sensitive   = true
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && length(var.users) == 0)
+    error_message = "`users` is only supported for classic instances, remove `users` or select a classic `plan`."
+  }
 }
 
 variable "service_credential_names" {
@@ -111,8 +132,13 @@ variable "service_credential_names" {
   default     = []
 
   validation {
-    condition     = alltrue([for credential in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], credential.role)])
-    error_message = "`service_credential_names` role must be one of the following: `Administrator`, `Operator`, `Viewer` or `Editor`."
+    condition     = local.is_classic || (local.is_gen2 && alltrue([for credential in var.service_credential_names : contains(["Manager", "Writer"], credential.role)]))
+    error_message = "`service_credential_names` role must be one of the following: `Manager` or `Writer` for Gen2 instances."
+  }
+
+  validation {
+    condition     = local.is_gen2 || (local.is_classic && alltrue([for credential in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], credential.role)]))
+    error_message = "`service_credential_names` role must be one of the following: `Administrator`, `Operator`, `Viewer` or `Editor` for classic instances."
   }
 
   validation {
@@ -177,6 +203,11 @@ variable "configuration" {
   })
   description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
   default     = null
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.configuration == null)
+    error_message = "`configuration` is only supported for classic instances, remove `configuration` or select a classic `plan`."
+  }
 }
 
 variable "version_upgrade_skip_backup" {
@@ -238,6 +269,11 @@ variable "auto_scaling" {
   })
   description = "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/messages-for-rabbitmq?topic=messages-for-rabbitmq-autoscaling in the IBM Cloud Docs."
   default     = null
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.auto_scaling == null)
+    error_message = "`auto_scaling` is only supported for classic instances, remove `auto_scaling` or select a classic `plan`."
+  }
 }
 
 ##############################################################
@@ -318,6 +354,11 @@ variable "backup_encryption_key_crn" {
     ])
     error_message = "Value must be the KMS key CRN from a Key Protect or Hyper Protect Crypto Services instance in one of the supported backup regions."
   }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.backup_encryption_key_crn == null)
+    error_message = "`backup_encryption_key_crn` is only supported for classic instances, remove `backup_encryption_key_crn` or select a classic `plan`."
+  }
 }
 
 variable "skip_iam_authorization_policy" {
@@ -374,5 +415,10 @@ variable "backup_crn" {
       can(regex("^crn:.*:backup:", var.backup_crn))
     ])
     error_message = "backup_crn must be null OR starts with 'crn:' and contains ':backup:'"
+  }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.backup_crn == null)
+    error_message = "`backup_crn` is only supported for classic instances, remove `backup_crn` or select a classic `plan`."
   }
 }
