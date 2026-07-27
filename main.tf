@@ -161,14 +161,16 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 
 # Workaround:
 # Montreal does not have ICD classic endpoint, so common-utilities submodule defaults to Toronto for Gen1 Databases. This stops the module erroring.
+# It gets the classic versions and not the gen2 versions.
+# Uncomment below lines after this PR is merged: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
 module "available_versions" {
 
   source   = "terraform-ibm-modules/common-utilities/ibm//modules/icd-versions"
   version  = "1.9.0"
   region   = var.region
   icd_type = "rabbitmq"
-  plan     = var.plan
-  service  = "messages-for-rabbitmq"
+  # plan     = var.plan
+  # service  = "messages-for-rabbitmq"
 }
 
 
@@ -177,12 +179,13 @@ locals {
 }
 
 resource "ibm_database" "rabbitmq_database" {
-  depends_on        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
-  name              = var.name
-  plan              = var.plan
-  location          = var.region
-  service           = "messages-for-rabbitmq"
-  version           = var.rabbitmq_version
+  depends_on = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
+  name       = var.name
+  plan       = var.plan
+  location   = var.region
+  service    = "messages-for-rabbitmq"
+  # Remove the hardcoded Gen2 version once this PR is merged: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
+  version           = local.is_gen2 ? "4.3" : var.rabbitmq_version
   resource_group_id = var.resource_group_id
   service_endpoints = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273

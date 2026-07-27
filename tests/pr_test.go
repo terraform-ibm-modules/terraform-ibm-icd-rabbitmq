@@ -143,7 +143,8 @@ func TestRunBasicGen2Example(t *testing.T) {
 
 	rmqGen2Region := "eu-de"
 	gen2Plan := "standard-gen2"
-	latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
+	// Remove the hardcoded Gen2 version once this PR is merged: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
+	// latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       "examples/basic",
@@ -153,7 +154,7 @@ func TestRunBasicGen2Example(t *testing.T) {
 		TerraformVars: map[string]interface{}{
 			"region":            rmqGen2Region,
 			"plan":              gen2Plan,
-			"rabbitmq_version":  latestVersion,
+			"rabbitmq_version":  "4.3",
 			"service_endpoints": "private",
 		},
 		CloudInfoService: sharedInfoSvc,
