@@ -228,8 +228,8 @@ locals {
   rabbitmq_id       = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].id : module.rabbitmq[0].id
   rabbitmq_version  = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].version : module.rabbitmq[0].version
   rabbitmq_crn      = var.existing_rabbitmq_instance_crn != null ? var.existing_rabbitmq_instance_crn : module.rabbitmq[0].crn
-  rabbitmq_hostname = var.existing_rabbitmq_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.rabbitmq[0].hostname
-  rabbitmq_port     = var.existing_rabbitmq_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.rabbitmq[0].port
+  rabbitmq_hostname = var.existing_rabbitmq_instance_crn != null ? (can(data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].hostname) ? data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].hostname : null) : module.rabbitmq[0].hostname
+  rabbitmq_port     = var.existing_rabbitmq_instance_crn != null ? (can(data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].port) ? data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].port : null) : module.rabbitmq[0].port
 }
 
 #######################################################################################################################
