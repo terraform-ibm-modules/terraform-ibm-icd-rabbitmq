@@ -25,6 +25,7 @@ import (
 )
 
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
+const fullyConfigurableGen2SolutionTerraformDir = "solutions/fully-configurable-gen2"
 
 const icdType = "rabbitmq"
 const icdShortType = "rmq"
@@ -228,6 +229,76 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+	}
+
+	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+		return options.RunSchematicTest()
+	})
+	assert.Nil(t, err, "This should not have errored")
+}
+
+// Test the fully-configurable-gen2 DA with defaults (IBM owned encryption keys)
+func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
+	t.Parallel()
+
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing: t,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fullyConfigurableGen2SolutionTerraformDir + "/*.tf",
+		},
+		TemplateFolder:             fullyConfigurableGen2SolutionTerraformDir,
+		BestRegionYAMLPath:         regionSelectionPath,
+		Prefix:                     fmt.Sprintf("%s-gen2da", icdShortType),
+		ResourceGroup:              resourceGroup,
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     60,
+		CheckApplyResultForUpgrade: true,
+	})
+
+	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
+
+	serviceCredentialSecrets := []map[string]interface{}{
+		{
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
+			"service_credentials": []map[string]string{
+				{
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Writer",
+				},
+				{
+					"secret_name": fmt.Sprintf("%s-cred-manager", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Manager",
+				},
+			},
+		},
+	}
+
+	serviceCredentialNames := []map[string]string{
+		{
+			"name":     "rabbitmq-manager",
+			"role":     "Manager",
+			"endpoint": "private",
+		},
+	}
+
+	region := "eu-de"
+	// latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
+		{Name: "region", Value: region, DataType: "string"},
+		{Name: "service_credential_names", Value: serviceCredentialNames, DataType: "list(object)"},
+		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["kp_dedicated_us_south_crn"], DataType: "string"},
+		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
+		// Remove the hardcoded Gen2 version once this PR fixed deployed on production: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
+		{Name: "rabbitmq_version", Value: "4.3", DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 	}
 
 	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
