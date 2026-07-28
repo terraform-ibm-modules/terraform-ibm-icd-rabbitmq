@@ -511,7 +511,7 @@
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "messages-for-rabbitmq",
-              "notes": "Required to configure an instance of Messages for RabbitMQ."
+              "notes": "Required to configure an instance of Messages for RabbitMQ Gen 2."
             },
             {
               "role_crns": [

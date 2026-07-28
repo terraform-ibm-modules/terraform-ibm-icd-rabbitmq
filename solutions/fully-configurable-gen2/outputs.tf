@@ -65,7 +65,7 @@ output "next_step_primary_url" {
 }
 
 output "next_step_secondary_label" {
-  value       = "Learn more about Messages for RabbitMQ"
+  value       = "Learn more about Messages for RabbitMQ Gen 2"
   description = "Secondary label"
 }
 
