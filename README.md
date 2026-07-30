@@ -45,6 +45,7 @@ This module implements an instance of the IBM Cloud Messages for RabbitMQ servic
   <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions">Deployable Architectures</a>
     <ul>
       <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions/fully-configurable">Cloud automation for RabbitMQ (Fully configurable)</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions/fully-configurable-gen2">IBM Cloud Messages Gen 2 (VPC) for RabbitMQ</a></li>
     </ul>
   </li>
   <li><a href="#contributing">Contributing</a></li>

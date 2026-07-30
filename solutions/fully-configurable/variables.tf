@@ -78,6 +78,20 @@ variable "rabbitmq_version" {
   default     = null
 }
 
+variable "plan" {
+  type        = string
+  description = "The name of the service plan that you choose for your RabbitMQ instance. The Gen 1 (Classic) plan is `standard`. The Gen 2 (VPC) plan is `standard-gen2`."
+  default     = "standard"
+
+  validation {
+    condition = anytrue([
+      var.plan == "standard",
+      var.plan == "standard-gen2",
+    ])
+    error_message = "Only supported plans are standard and standard-gen2"
+  }
+}
+
 ##############################################################################
 # ICD hosting model properties
 ##############################################################################
@@ -442,7 +456,7 @@ variable "service_credential_secrets" {
     }))
   }))
   default     = []
-  description = "Service credential secrets configuration for Messages for RabbitMQ. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions/standard/DA-types.md#service-credential-secrets)."
+  description = "Service credential secrets configuration for Messages for RabbitMQ. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/tree/main/solutions/fully-configurable/DA-types.md#service-credential-secrets)."
 
   validation {
     # Service roles CRNs can be found at https://cloud.ibm.com/iam/roles, select the IBM Cloud Database and select the role
