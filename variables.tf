@@ -16,12 +16,6 @@ variable "rabbitmq_version" {
   type        = string
   description = "The version of RabbitMQ to deploy. If no value passed, the current ICD preferred version is used."
   default     = null
-
-  validation {
-
-    condition     = var.rabbitmq_version == null ? true : contains(local.icd_supported_versions, var.rabbitmq_version)
-    error_message = "Unsupported rabbitmq_version '${var.rabbitmq_version == null ? "null" : var.rabbitmq_version}'. Supported versions: ${join(", ", local.icd_supported_versions)}"
-  }
 }
 
 variable "region" {
