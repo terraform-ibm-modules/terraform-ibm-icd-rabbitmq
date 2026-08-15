@@ -144,8 +144,7 @@ func TestRunBasicGen2Example(t *testing.T) {
 
 	rmqGen2Region := "eu-de"
 	gen2Plan := "standard-gen2"
-	// Remove the hardcoded Gen2 version once this PR is merged: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
-	// latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
+	latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       "examples/basic",
@@ -155,7 +154,7 @@ func TestRunBasicGen2Example(t *testing.T) {
 		TerraformVars: map[string]interface{}{
 			"region":            rmqGen2Region,
 			"plan":              gen2Plan,
-			"rabbitmq_version":  "4.3",
+			"rabbitmq_version":  latestVersion,
 			"service_endpoints": "private",
 		},
 		CloudInfoService: sharedInfoSvc,
@@ -283,7 +282,7 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 	}
 
 	region := "eu-de"
-	// latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
+	latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
@@ -297,8 +296,7 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["kp_dedicated_us_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
-		// Remove the hardcoded Gen2 version once this PR fixed deployed on production: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
-		{Name: "rabbitmq_version", Value: "4.3", DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 	}
 
 	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
