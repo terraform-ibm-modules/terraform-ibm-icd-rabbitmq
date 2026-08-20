@@ -216,7 +216,7 @@ variable "existing_kms_key_crn" {
 
 variable "kms_endpoint_type" {
   type        = string
-  description = "The type of endpoint to use for communicating with the Key Protect or Hyper Protect Crypto Services instance. Possible values: `public`, `private`. Applies only if `existing_kms_key_crn` is not specified."
+  description = "The type of endpoint to use for communicating with the Key Protect instance. Possible values: `public`, `private`. Applies only if `existing_kms_key_crn` is not specified."
   default     = "private"
 
   validation {
@@ -227,7 +227,7 @@ variable "kms_endpoint_type" {
 
 variable "skip_rabbitmq_kms_auth_policy" {
   type        = bool
-  description = "Whether to create an IAM authorization policy that permits all Messages for RabbitMQ instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance specified in the `existing_kms_instance_crn` variable."
+  description = "Whether to create an IAM authorization policy that permits all Messages for RabbitMQ instances in the resource group to read the encryption key from the Key Protect instance specified in the `existing_kms_instance_crn` variable."
   default     = false
 }
 
