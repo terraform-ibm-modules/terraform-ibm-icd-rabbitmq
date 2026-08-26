@@ -612,11 +612,11 @@
             {
               "key": "rabbitmq_version",
               "required": true,
-              "default_value": "4.3",
+              "default_value": "4",
               "options": [
                 {
-                  "displayname": "4.3",
-                  "value": "4.3"
+                  "displayname": "4",
+                  "value": "4"
                 }
               ]
             },
