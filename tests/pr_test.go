@@ -144,8 +144,7 @@ func TestRunBasicGen2Example(t *testing.T) {
 
 	rmqGen2Region := "eu-de"
 	gen2Plan := "standard-gen2"
-	// Remove the hardcoded Gen2 version once this PR is merged: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
-	// latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
+	latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       "examples/basic",
@@ -155,7 +154,7 @@ func TestRunBasicGen2Example(t *testing.T) {
 		TerraformVars: map[string]interface{}{
 			"region":            rmqGen2Region,
 			"plan":              gen2Plan,
-			"rabbitmq_version":  "4.3",
+			"rabbitmq_version":  latestVersion,
 			"service_endpoints": "private",
 		},
 		CloudInfoService: sharedInfoSvc,
@@ -237,10 +236,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 }
 
-// Test the fully-configurable-gen2 DA with defaults (IBM owned encryption keys)
-func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
-	t.Parallel()
-
+func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschematic.TestSchematicOptions, string) {
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing: t,
 		TarIncludePatterns: []string{
@@ -249,10 +245,9 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 		},
 		TemplateFolder:             fullyConfigurableGen2SolutionTerraformDir,
 		BestRegionYAMLPath:         regionSelectionPath,
-		Prefix:                     fmt.Sprintf("%s-gen2da", icdShortType),
+		Prefix:                     prefix,
 		ResourceGroup:              resourceGroup,
 		DeleteWorkspaceOnFail:      false,
-		WaitJobCompleteMinutes:     60,
 		CheckApplyResultForUpgrade: true,
 	})
 
@@ -283,7 +278,7 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 	}
 
 	region := "eu-de"
-	// latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
+	latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
@@ -297,14 +292,38 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["kp_dedicated_us_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
-		// Remove the hardcoded Gen2 version once this PR fixed deployed on production: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
-		{Name: "rabbitmq_version", Value: "4.3", DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
+		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 	}
+
+	return options, uniqueResourceGroup
+}
+
+// Test the fully-configurable-gen2 DA with defaults (IBM owned encryption keys)
+func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
+	t.Parallel()
+
+	options, uniqueResourceGroup := setupFullyConfigurableGen2Options(t, fmt.Sprintf("%s-gen2da", icdShortType))
+	options.WaitJobCompleteMinutes = 60
 
 	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
 	})
 	assert.Nil(t, err, "This should not have errored")
+}
+
+// Upgrade test the fully-configurable-gen2 DA
+func TestRunFullyConfigurableGen2UpgradeSolutionSchematics(t *testing.T) {
+	t.Parallel()
+
+	options, uniqueResourceGroup := setupFullyConfigurableGen2Options(t, fmt.Sprintf("%s-gen2-upg", icdShortType))
+	options.WaitJobCompleteMinutes = 120
+
+	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+		return options.RunSchematicUpgradeTest()
+	})
+	if !options.UpgradeTestSkipped {
+		assert.Nil(t, err, "This should not have errored")
+	}
 }
 
 // Upgrade test the fully-configurable DA with KMS encryption (KYOK)

@@ -161,13 +161,12 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 ########################################################################################################################
 
 resource "ibm_database" "rabbitmq_database" {
-  depends_on = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
-  name       = var.name
-  plan       = var.plan
-  location   = var.region
-  service    = "messages-for-rabbitmq"
-  # Remove the hardcoded Gen2 version once this PR is merged: https://github.ibm.com/cdp/rabbitmq-cp-http-api/pull/106
-  version           = local.is_gen2 ? "4.3" : var.rabbitmq_version
+  depends_on        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
+  name              = var.name
+  plan              = var.plan
+  location          = var.region
+  service           = "messages-for-rabbitmq"
+  version           = var.rabbitmq_version
   resource_group_id = var.resource_group_id
   service_endpoints = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273
@@ -319,7 +318,7 @@ resource "ibm_resource_tag" "rabbitmq_tag" {
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
   source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module"
-  version          = "1.36.8"
+  version          = "1.36.9"
   rule_description = var.cbr_rules[count.index].description
   enforcement_mode = var.cbr_rules[count.index].enforcement_mode
   rule_contexts    = var.cbr_rules[count.index].rule_contexts
