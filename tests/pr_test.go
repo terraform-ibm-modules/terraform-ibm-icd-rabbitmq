@@ -183,7 +183,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		WaitJobCompleteMinutes:     60,
 		CheckApplyResultForUpgrade: true,
 		WorkspaceEnvVars: []testschematic.WorkspaceEnvironmentVariable{
-			{Key: "TF_LOG", Value: "TRACE"},
+			{Key: "TF_LOG", Value: "DEBUG"},
 		},
 	})
 
@@ -346,7 +346,7 @@ func TestRunFullyConfigurableWithKMSUpgradeSolution(t *testing.T) {
 		WaitJobCompleteMinutes:     120,
 		CheckApplyResultForUpgrade: true,
 		WorkspaceEnvVars: []testschematic.WorkspaceEnvironmentVariable{
-			{Key: "TF_LOG", Value: "TRACE"},
+			{Key: "TF_LOG", Value: "DEBUG"},
 		},
 	})
 
