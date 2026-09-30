@@ -182,9 +182,6 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		DeleteWorkspaceOnFail:      false,
 		WaitJobCompleteMinutes:     60,
 		CheckApplyResultForUpgrade: true,
-		WorkspaceEnvVars: []testschematic.WorkspaceEnvironmentVariable{
-			{Key: "TF_LOG", Value: "DEBUG"},
-		},
 	})
 
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
@@ -345,9 +342,6 @@ func TestRunFullyConfigurableWithKMSUpgradeSolution(t *testing.T) {
 		DeleteWorkspaceOnFail:      false,
 		WaitJobCompleteMinutes:     120,
 		CheckApplyResultForUpgrade: true,
-		WorkspaceEnvVars: []testschematic.WorkspaceEnvironmentVariable{
-			{Key: "TF_LOG", Value: "DEBUG"},
-		},
 	})
 
 	serviceCredentialSecrets := []map[string]interface{}{
