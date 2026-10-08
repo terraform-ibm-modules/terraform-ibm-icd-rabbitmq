@@ -43,7 +43,6 @@ var permanentResources map[string]interface{}
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
-	"eu-de",
 	"us-south",
 }
 
@@ -142,7 +141,7 @@ func TestMain(m *testing.M) {
 func TestRunBasicGen2Example(t *testing.T) {
 	t.Parallel()
 
-	rmqGen2Region := "eu-de"
+	rmqGen2Region := "us-south"
 	gen2Plan := "standard-gen2"
 	latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -277,7 +276,7 @@ func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschema
 		},
 	}
 
-	region := "eu-de"
+	region := "us-south"
 	latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
