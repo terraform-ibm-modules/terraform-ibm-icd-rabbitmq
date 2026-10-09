@@ -142,7 +142,7 @@ func TestMain(m *testing.M) {
 func TestRunBasicGen2Example(t *testing.T) {
 	t.Parallel()
 
-	rmqGen2Region := "eu-de"
+	rmqGen2Region := "us-south"
 	gen2Plan := "standard-gen2"
 	latestVersion, _ := GetVersionsGen2(rmqGen2Region, gen2Plan)
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -225,7 +225,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["kp_multitenant_us_south_crn"], DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
 		{Name: "rabbitmq_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported RabbitMQ version
 	}
@@ -277,7 +277,7 @@ func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschema
 		},
 	}
 
-	region := "eu-de"
+	region := "us-south"
 	latestVersion, _ := GetVersionsGen2(region, "standard-gen2")
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
