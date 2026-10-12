@@ -141,7 +141,7 @@ module "icd_rabbitmq" {
   backup_encryption_key_crn    = module.key_protect_all_inclusive.keys["icd.${local.backups_key_name}"].crn
   service_credential_names     = local.service_credential_names
   member_host_flavor           = "multitenant"
-  # Example of setting configuration - none of the below is mandatory - those settings are set in this example for illustation purpose and ensure path is exercised in automated test using this example.
+  # Example of setting configuration - none of the below is mandatory - those settings are set in this example for illustration purpose and ensure path is exercised in automated test using this example.
   configuration = {
     delete_undefined_queues = true
   }
