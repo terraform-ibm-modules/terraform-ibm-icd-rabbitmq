@@ -4,6 +4,7 @@ Several optional input variables in the IBM Cloud [Messages for RabbitMQ deploya
 
 - [Service credentials](#svc-credential-name) (`service_credential_names`)
 - [Service credential secrets](#service-credential-secrets) (`service_credential_secrets`)
+- [Configuration](#configuration) (`configuration`)
 
 ## Service credentials <a name="svc-credential-name"></a>
 
@@ -100,4 +101,28 @@ The following example includes all the configuration options for four service cr
     ]
   }
 ]
+```
+
+## Configuration  <a name="configuration"></a>
+
+The Configuration variable tunes Messages for RabbitMQ to suit different use cases.
+
+- Variable name: `configuration`
+- Type: An object with attribute `delete_undefined_queues`
+- Default value: `{ delete_undefined_queues = true }`
+
+### Options for configuration
+
+The configuration object in the input contains the following options:
+
+- `delete_undefined_queues`: Automatically delete undefined queues (default: `true`).
+
+### Example configuration
+
+The following example shows values for the `configuration` input.
+
+```hcl
+{
+  delete_undefined_queues = true
+}
 ```

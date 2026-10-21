@@ -195,12 +195,25 @@ variable "configuration" {
   type = object({
     delete_undefined_queues = optional(bool)
   })
-  description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
+  description = "Database configuration parameters for classic (gen1) plans. See https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details. Not supported for gen2 plans — use `configuration_gen2` instead."
   default     = null
 
   validation {
-    condition     = local.is_classic || (local.is_gen2 && var.configuration == null)
-    error_message = "`configuration` is only supported for classic instances, remove `configuration` or select a classic `plan`."
+    condition     = local.is_classic || var.configuration == null
+    error_message = "`configuration` is only supported for classic instances. Use `configuration_gen2` for gen2 plans."
+  }
+}
+
+variable "configuration_gen2" {
+  type = object({
+    delete_undefined_queues = optional(bool)
+  })
+  description = "Database configuration parameters for gen2 plans. Not supported for classic plans — use `configuration` instead."
+  default     = null
+
+  validation {
+    condition     = local.is_gen2 || var.configuration_gen2 == null
+    error_message = "`configuration_gen2` is only supported for gen2 instances. Use `configuration` for classic plans."
   }
 }
 

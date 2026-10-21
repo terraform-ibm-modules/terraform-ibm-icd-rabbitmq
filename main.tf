@@ -184,7 +184,7 @@ resource "ibm_database" "rabbitmq_database" {
   resource_group_id = var.resource_group_id
   service_endpoints = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273
-  configuration               = var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null
+  configuration               = local.is_gen2 ? (var.configuration_gen2 != null ? jsonencode({ for k, v in var.configuration_gen2 : k => v if v != null }) : null) : (var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null)
   deletion_protection         = var.deletion_protection
   version_upgrade_skip_backup = var.version_upgrade_skip_backup
   tags                        = var.resource_tags

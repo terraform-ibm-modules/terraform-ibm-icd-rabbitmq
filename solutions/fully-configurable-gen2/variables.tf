@@ -116,6 +116,16 @@ variable "member_host_flavor" {
   }
 }
 
+variable "configuration" {
+  type = object({
+    delete_undefined_queues = optional(bool, true)
+  })
+  description = "Database configuration parameters for the Messages for RabbitMQ Gen2 instance."
+  default = {
+    delete_undefined_queues = true
+  }
+}
+
 variable "service_credential_names" {
   description = "A list of service credential resource keys to be created for the RabbitMQ instance. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-rabbitmq/blob/main/solutions/fully-configurable-gen2/DA-types.md#svc-credential-name)"
   type = list(object({
