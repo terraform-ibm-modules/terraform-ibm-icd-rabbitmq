@@ -172,17 +172,8 @@ data "ibm_database" "existing_db_instance" {
   count             = var.existing_rabbitmq_instance_crn != null ? 1 : 0
   name              = data.ibm_resource_instance.existing_instance_resource[0].name
   resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
-  location          = var.region
+  location          = data.ibm_resource_instance.existing_instance_resource[0].location
   service           = "messages-for-rabbitmq"
-}
-
-# Lookup existing instance connection details
-data "ibm_database_connection" "existing_connection" {
-  count         = var.existing_rabbitmq_instance_crn != null ? 1 : 0
-  endpoint_type = "private"
-  deployment_id = data.ibm_database.existing_db_instance[0].id
-  user_id       = data.ibm_database.existing_db_instance[0].adminuser
-  user_type     = "database"
 }
 
 # Create new instance
@@ -228,8 +219,8 @@ locals {
   rabbitmq_id       = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].id : module.rabbitmq[0].id
   rabbitmq_version  = var.existing_rabbitmq_instance_crn != null ? data.ibm_database.existing_db_instance[0].version : module.rabbitmq[0].version
   rabbitmq_crn      = var.existing_rabbitmq_instance_crn != null ? var.existing_rabbitmq_instance_crn : module.rabbitmq[0].crn
-  rabbitmq_hostname = var.existing_rabbitmq_instance_crn != null ? (can(data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].hostname) ? data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].hostname : null) : module.rabbitmq[0].hostname
-  rabbitmq_port     = var.existing_rabbitmq_instance_crn != null ? (can(data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].port) ? data.ibm_database_connection.existing_connection[0].mqtts[0].hosts[0].port : null) : module.rabbitmq[0].port
+  rabbitmq_hostname = var.existing_rabbitmq_instance_crn != null ? null : module.rabbitmq[0].hostname # connection details lookup not supported by gen2 for existing instances
+  rabbitmq_port     = var.existing_rabbitmq_instance_crn != null ? null : module.rabbitmq[0].port     # connection details lookup not supported by gen2 for existing instances
 }
 
 #######################################################################################################################
