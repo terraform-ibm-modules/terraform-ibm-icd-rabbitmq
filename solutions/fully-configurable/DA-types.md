@@ -127,12 +127,12 @@ If you can't use the IAM-enabled `service_credential_names` input variable for a
 [
   {
     "name": "es_admin",
-    "password": "securepassword123",
+    "password": "<es_admin_password>",
     "type": "database",
   },
   {
     "name": "es_reader",
-    "password": "readpassword123",
+    "password": "<es_reader_password>",
     "type": "ops_manager"
   }
 ]
