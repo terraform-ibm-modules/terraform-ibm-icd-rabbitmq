@@ -191,19 +191,6 @@ variable "access_tags" {
   }
 }
 
-variable "configuration" {
-  type = object({
-    delete_undefined_queues = optional(bool)
-  })
-  description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
-  default     = null
-
-  validation {
-    condition     = local.is_classic || (local.is_gen2 && var.configuration == null)
-    error_message = "`configuration` is only supported for classic instances, remove `configuration` or select a classic `plan`."
-  }
-}
-
 variable "version_upgrade_skip_backup" {
   type        = bool
   description = "Whether to skip taking a backup before upgrading the database version. Attention: Skipping a backup is not recommended. Skipping a backup before a version upgrade is dangerous and may result in data loss if the upgrade fails at any stage — there will be no immediate backup to restore from."
