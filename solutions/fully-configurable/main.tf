@@ -299,7 +299,6 @@ module "rabbitmq" {
   disk_mb                           = var.member_disk_mb
   cpu_count                         = var.member_cpu_count
   auto_scaling                      = var.auto_scaling
-  configuration                     = var.configuration
   service_credential_names          = var.service_credential_names
   backup_crn                        = var.backup_crn
   service_endpoints                 = var.service_endpoints

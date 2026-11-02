@@ -6,7 +6,6 @@ Several optional input variables in the IBM Cloud [Messages for RabbitMQ deploya
 - [Service credential secrets](#service-credential-secrets) (`service_credential_secrets`)
 - [Users](#users) (`users`)
 - [Autoscaling](#autoscaling) (`auto_scaling`)
-- [Configuration](#configuration) (`configuration`)
 
 ## Service credentials <a name="svc-credential-name"></a>
 
@@ -128,12 +127,12 @@ If you can't use the IAM-enabled `service_credential_names` input variable for a
 [
   {
     "name": "es_admin",
-    "password": "securepassword123",
+    "password": "<es_admin_password>",
     "type": "database",
   },
   {
     "name": "es_reader",
-    "password": "readpassword123",
+    "password": "<es_reader_password>",
     "type": "ops_manager"
   }
 ]
@@ -200,30 +199,5 @@ The following example shows values for both disk and memory for the `auto_scalin
       "rate_period_seconds": 900,
       "rate_units": "mb"
   }
-}
-```
-
-## Configuration  <a name="configuration"></a>
-
-The Configuration variable tunes messages for RabbitMQ to suit different use case. For more information, see [Configuration](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request).
-
-- Variable name: `configuration`
-- Type: An object with multiple attributes i.e.  `delete_undefined_queues`
-
-### Options for configuration
-
-The configuration object in the input contains the following options
-
-**Available Settings. [Learn more](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request)**
-
-- `delete_undefined_queues`: Automatically delete undefined queues. (default: `true`).
-
-### Example configuration
-
-The following example shows values for the `configuration` input.
-
-```hcl
-{
-    delete_undefined_queues      = true
 }
 ```
