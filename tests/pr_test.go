@@ -276,6 +276,11 @@ func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschema
 			"role":     "Manager",
 			"endpoint": "private",
 		},
+		{
+			"name":     "rabbitmq-reader",
+			"role":     "Reader",
+			"endpoint": "private",
+		},
 	}
 
 	region := "us-south"
