@@ -17,6 +17,11 @@ locals {
       name     = "rabbitmq_writer"
       role     = "Writer"
       endpoint = local.endpoint_type
+    },
+    {
+      name     = "rabbitmq_reader"
+      role     = "Reader"
+      endpoint = local.endpoint_type
     }
   ]
   classic_service_credential_names = [
@@ -41,6 +46,9 @@ locals {
       endpoint = local.endpoint_type
     }
   ]
+
+  service_credential_names = local.is_gen2 ? local.gen2_service_credential_names : local.classic_service_credential_names
+  member_host_flavor       = local.is_gen2 ? local.gen2_host_flavor : local.classic_host_flavor
 }
 
 ##############################################################################
@@ -72,8 +80,8 @@ module "database" {
   access_tags              = var.access_tags
   resource_tags            = var.resource_tags
   service_endpoints        = var.service_endpoints
-  member_host_flavor       = local.is_gen2 ? local.gen2_host_flavor : local.classic_host_flavor
+  member_host_flavor       = local.member_host_flavor
   disk_mb                  = local.is_gen2 ? 10240 : 1024
   deletion_protection      = false
-  service_credential_names = local.is_gen2 ? local.gen2_service_credential_names : local.classic_service_credential_names
+  service_credential_names = local.service_credential_names
 }
