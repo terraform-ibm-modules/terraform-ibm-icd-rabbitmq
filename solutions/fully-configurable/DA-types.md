@@ -208,7 +208,7 @@ The following example shows values for both disk and memory for the `auto_scalin
 The Configuration variable tunes messages for RabbitMQ to suit different use case. For more information, see [Configuration](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request).
 
 - Variable name: `configuration`
-- Type: An object with multiple attributes i.e.  `delete_undefined_queues`
+- Type: An object with multiple attributes i.e.  `delete_undefined_queues`, `max_connections`, `mqtt_max_connections`, `stream_max_connections`, `consumer_disconnected_timeout`
 
 ### Options for configuration
 
@@ -217,6 +217,10 @@ The configuration object in the input contains the following options
 **Available Settings. [Learn more](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration-request)**
 
 - `delete_undefined_queues`: Automatically delete undefined queues. (default: `true`).
+- `max_connections`: Maximum number of connections.
+- `mqtt_max_connections`: Maximum number of MQTT connections. Sent to the API as `mqtt.max_connections`.
+- `stream_max_connections`: Maximum number of stream protocol connections. Sent to the API as `stream.max_connections`.
+- `consumer_disconnected_timeout`: Consumer disconnected timeout, in seconds.
 
 ### Example configuration
 

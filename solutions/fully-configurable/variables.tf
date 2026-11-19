@@ -144,7 +144,11 @@ variable "member_host_flavor" {
 
 variable "configuration" {
   type = object({
-    delete_undefined_queues = optional(bool)
+    delete_undefined_queues       = optional(bool)
+    max_connections               = optional(number)
+    mqtt_max_connections          = optional(number)
+    stream_max_connections        = optional(number)
+    consumer_disconnected_timeout = optional(number)
   })
   description = "Messages for RabbitMQ configuration parameters, see https://cloud.ibm.com/docs/messages-for-rabbitmq for more details."
   default = {

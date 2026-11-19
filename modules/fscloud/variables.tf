@@ -107,7 +107,11 @@ variable "access_tags" {
 
 variable "configuration" {
   type = object({
-    delete_undefined_queues = optional(bool)
+    delete_undefined_queues       = optional(bool)
+    max_connections               = optional(number)
+    mqtt_max_connections          = optional(number)
+    stream_max_connections        = optional(number)
+    consumer_disconnected_timeout = optional(number)
   })
   description = "Database configuration parameters, see https://cloud.ibm.com/docs/databases-for-rabbitmq?topic=databases-for-rabbitmq-changing-configuration&interface=api for more details."
   default     = null

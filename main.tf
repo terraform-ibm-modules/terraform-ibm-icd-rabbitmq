@@ -15,6 +15,9 @@ locals {
   # Determine if gen2 plan is being used
   is_gen2    = can(regex("-gen2$", var.plan))
   is_classic = !local.is_gen2 # For code readability and maintenance
+
+  # Use the gen2 configuration for gen2 plans, otherwise the classic one
+  configuration = local.is_gen2 ? var.configuration_gen2 : var.configuration
 }
 
 ########################################################################################################################
@@ -184,7 +187,15 @@ resource "ibm_database" "rabbitmq_database" {
   resource_group_id = var.resource_group_id
   service_endpoints = var.service_endpoints
   # remove elements with null values: see https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/273
-  configuration               = var.configuration != null ? jsonencode({ for k, v in var.configuration : k => v if v != null }) : null
+  configuration = local.configuration != null ? jsonencode({
+    for k, v in {
+      delete_undefined_queues       = local.configuration.delete_undefined_queues
+      max_connections               = local.configuration.max_connections
+      "mqtt.max_connections"        = local.configuration.mqtt_max_connections
+      "stream.max_connections"      = local.configuration.stream_max_connections
+      consumer_disconnected_timeout = local.configuration.consumer_disconnected_timeout
+    } : k => v if v != null
+  }) : null
   deletion_protection         = var.deletion_protection
   version_upgrade_skip_backup = var.version_upgrade_skip_backup
   tags                        = var.resource_tags
