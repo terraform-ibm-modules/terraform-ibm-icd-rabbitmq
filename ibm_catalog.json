@@ -676,6 +676,19 @@
               "hidden": true
             },
             {
+              "key": "configuration",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "supportedLanguages": [
+                    "hcl"
+                  ]
+                }
+              }
+            },
+            {
               "key": "service_credential_names",
               "type": "array",
               "custom_config": {
